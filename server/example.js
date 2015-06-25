@@ -1,6 +1,10 @@
 var rpc = require('jrpc2');
-var app = require('express')();
+var express = require('express')
+  , cors = require('cors')
+  , app = express();
 var rpcServer = new rpc.Server();
+
+app.use(cors());
 
 rpcServer.loadModules(__dirname + '/modules/', function () {
   app.post('/', rpc.middleware(rpcServer));

@@ -1,7 +1,34 @@
-goog.require('goog.dom');
+goog.require('goog.net.XhrIo');
 
-function sayHi() {
-  var newHeader = goog.dom.createDom('h1', {'style': 'background-color:#EEE'},
-    'Hello world!');
-  goog.dom.appendChild(document.body, newHeader);
+
+/**
+ * Retrieve Json data using XhrIo's static send() method.
+ *
+ * @param {string} dataUrl The url to request.
+ */
+function getData(dataUrl) {
+	var content = goog.json.serialize(
+		{	"jsonrpc": "2.0",
+			"method": "math.add",
+			"params": [2, 3],
+			"id": 97 }
+		);
+  log('Sending simple request for ['+ dataUrl + ']');
+  goog.net.XhrIo.send(dataUrl, function(e) {
+      var xhr = e.target;
+      var obj = xhr.getResponseJson();
+      log('Received Json data object: ');
+      console.log(obj);
+  },
+  "POST", content);
+}
+
+/**
+ * Basic logging to an element called "log".
+ *
+ * @param {string} msg Message to display on page
+ */
+function log(msg) {
+  document.getElementById('log').appendChild(document.createTextNode(msg));
+  document.getElementById('log').appendChild(document.createElement('br'));
 }
