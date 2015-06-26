@@ -1,7 +1,7 @@
 var rpc = require('jrpc2');
-var express = require('express')
-  , cors = require('cors')
-  , app = express();
+var express = require('express');
+var cors = require('cors');
+var app = express();
 var rpcServer = new rpc.Server();
 
 app.use(cors());
