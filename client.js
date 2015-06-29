@@ -17,7 +17,7 @@ function getData(dataUrl) {
   goog.net.XhrIo.send(dataUrl, function(e) {
       var xhr = e.target;
       var obj = xhr.getResponseJson();
-      log('Received Json data object: ');
+      log('Result: ' + obj.result);
       console.log(obj);
   },
   "POST", content);
