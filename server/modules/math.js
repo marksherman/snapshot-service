@@ -5,4 +5,4 @@ module.exports = {
   pow: function (a, b) {
     return Promise.resolve(Math.pow(a, b));
   }
-}
+};
