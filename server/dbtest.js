@@ -73,9 +73,7 @@ function get_code_name (username) {
 	return new Promise(
 		function(resolve, reject){
 			// Check if username already exists
-			var p = username_exists(username);
-			p.then(
-				function(value) {
+			return username_exists(username).then(function(value) {
 					if (value === true){
 						// username exists, just fetch the already-existing codename
 						db.get("SELECT codename FROM usermap WHERE username = ?", username,
@@ -85,7 +83,10 @@ function get_code_name (username) {
 					} else if (value === false){
 						//TODO
 						// username does not exist, insert a new codename
-						resolve("no name found!");
+						var newname = generate_unique_name();
+						resolve(newname);
+					} else {
+						reject("something went wrong in get_code_name!");
 					}
 				}
 			);
@@ -93,6 +94,17 @@ function get_code_name (username) {
 	);
 // actual insertion:
 //	db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", username, codename);
+}
+
+// Tests the get_code_name function
+function test_name(username){
+	console.log("testing getting code name for " + username + "....");
+	return get_code_name(username).then(function(val){
+		console.log("got code name: " + val);
+		return val;
+	}).catch(function(error){
+		console.log("test_name something went wrong", error);
+	});
 }
 
 var dbinit = function(error) {
@@ -115,8 +127,8 @@ var test_data = function () {
 
 
 console.log("**********************************");
-var namepgood = get_code_name("Calliope");
-var namepbad = get_code_name("CalliopeZZZZ");
+var namepgood = test_name("Calliope");
+var namepbad = test_name("CalliopeZZZZ");
 namepgood.then(function(value){
 	console.log("good name value: " + value);
 });
@@ -130,4 +142,4 @@ namepbad.then(function(value){
 //dbinit();
 //test_data();
 
-//db.close();
+db.close();
