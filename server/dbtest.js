@@ -2,6 +2,8 @@ var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
 
+
+// returns a promise that resolves true or false
 function some_name_exists (colname, username) {
 	return new Promise(
 		function(resolve, reject) {
@@ -13,7 +15,7 @@ function some_name_exists (colname, username) {
 					} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
 						resolve(false);
 					} else {
-						reject(new Error("database did not return an expected value in username_exists"));
+						reject("database did not return an expected value in some_name_exists");
 					}
 				}
 			);
@@ -21,39 +23,51 @@ function some_name_exists (colname, username) {
 	);
 }
 
+// returns a promise that resolves true or false
 function username_exists (username) {
 	return some_name_exists("username", username);
 }
 
+// returns a promise that resolves true or false
 function codename_exists (username) {
 	return some_name_exists("codename", username);
 }
 
-
+// returns a string, NOT a promise
 function generate_random_name(){
 	var tempname = codename.generate(['random'],['adjectives','animals']);
 	return tempname[0]+tempname[1];
 }
 
+// returns a promise, apparently (Mark doesn't completely know why)
 function generate_unique_name(){
-	return new Promise(
-		function(resolve, reject){
-			// get a new name
-			var name = generate_random_name();
-			// check to make sure it is unique
-			var existp = codename_exists(name);
-			existp.then(function(value){
-				if( value === false ){
-					// name not found. it's unique! return it.
-					resolve(name);
-				} else {
-					// name was found or something else went wrong. not unique.
-					reject("bad name - please run generate_unique_name again");
-				}
-			});
+	// get a new name
+	var name = generate_random_name();
+	// check to make sure it is unique
+	return codename_exists(name).then(function(value){
+		if( value === false ){
+			// name not found. it's unique! return it.
+			console.log("new name: " + name );
+			return name;
+		} else {
+			// name was found, try again.
+			console.log("name " + name + " not unique, trying again " + n);
+			return generate_unique_name();
 		}
-	);
+	});
 }
+
+// Tests the generate_unique_name function
+function test_gen(){
+	console.log("testing random name generation....");
+	return generate_unique_name().then(function(val){
+		console.log("generated name: " + val);
+		return val;
+	}).catch(function(error){
+		console.log("something went wrong", error);
+	});
+}
+
 
 function get_code_name (username) {
 	return new Promise(
@@ -116,4 +130,4 @@ namepbad.then(function(value){
 //dbinit();
 //test_data();
 
-db.close();
+//db.close();
