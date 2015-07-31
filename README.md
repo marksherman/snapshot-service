@@ -6,7 +6,7 @@ Requires: node.js v0.12.5 with modules jrpc2 express cors bluebird
 ##Server Setup
 ```
 cd server
-npm install jrpc2 express cors bluebird
+npm install jrpc2 express cors bluebird sqlite3 codename
 ```
 
 ##Run Server
