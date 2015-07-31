@@ -12,7 +12,7 @@ npm install codename cors express jrpc2 sqlite3
 ##Run Server
 in server/
 ```
-node example.js
+node snapshot-service.js
 ```
 
 ##Test Client
