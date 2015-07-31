@@ -1,4 +1,4 @@
-var sqlite3 = require('sqlite3');
+var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
 
@@ -6,14 +6,9 @@ var exports = module.exports = {};
 
 /*******************************************************************************
  * Provides:
- *
- * .init() - initialize the database if not (safe to always run on startup).
- *           Throws error on failure.
- *
- * .close() - closes database (use when shutting down)
- *
  * .get_code_name(username) - gets the code name for the provided username.
  *           Returns a promise that resolves to a string
+ * .close() - closes database (use when shutting down)
  ******************************************************************************/
 
 // returns a promise that resolves true or false
@@ -141,7 +136,7 @@ function test_name(username){
 	});
 }
 
-exports.init = function () {
+var dbinit = function () {
 	db.serialize(function() {
 		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
 		function(err){
@@ -155,3 +150,10 @@ exports.init = function () {
 exports.close = function () {
 	db.close();
 };
+
+console.log("Initializing user database (userdb.js)");
+try {
+    dbinit();
+} catch (e) {
+    console.log("Error in userdb.init: ", e);
+}
