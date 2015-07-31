@@ -9,16 +9,15 @@ function some_name_exists (colname, username) {
 		function(resolve, reject) {
 			// no need to serialize, db action is read-only
 			db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)", username,
-				function(err, row){
-					if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 1 ){
-						resolve(true);
-					} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
-						resolve(false);
-					} else {
-						reject("database did not return an expected value in some_name_exists");
-					}
+			function(err, row){
+				if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 1 ){
+					resolve(true);
+				} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
+					resolve(false);
+				} else {
+					reject("database did not return an expected value in some_name_exists");
 				}
-			);
+			});
 		}
 	);
 }
@@ -39,20 +38,30 @@ function generate_random_name(){
 	return tempname[0]+tempname[1];
 }
 
+// for testing purposes
+function generate_fake_name(){
+	var names = ["shark", "ActualNewName"];
+	return names[Math.floor(Math.random() * names.length)];
+}
+
 // returns a promise, apparently (Mark doesn't completely know why)
 function generate_unique_name(){
 	// get a new name
 	var name = generate_random_name();
+	console.log("trying " + name);
 	// check to make sure it is unique
 	return codename_exists(name).then(function(value){
+		console.log("exists value: " + value);
 		if( value === false ){
 			// name not found. it's unique! return it.
 			console.log("new name: " + name );
 			return name;
-		} else {
+		} else if( value === true ) {
 			// name was found, try again.
-			console.log("name " + name + " not unique, trying again " + n);
+			console.log("name " + name + " not unique, trying again ");
 			return generate_unique_name();
+		} else {
+			reject("Unexpected value from codename_exists in generate_unique_name.");
 		}
 	});
 }
@@ -74,26 +83,25 @@ function get_code_name (username) {
 		function(resolve, reject){
 			// Check if username already exists
 			return username_exists(username).then(function(value) {
-					if (value === true){
-						// username exists, just fetch the already-existing codename
-						db.get("SELECT codename FROM usermap WHERE username = ?", username,
-							function(err, row){
-								resolve(row.codename);
-							});
-					} else if (value === false){
-						//TODO
-						// username does not exist, insert a new codename
-						var newname = generate_unique_name();
-						resolve(newname);
-					} else {
-						reject("something went wrong in get_code_name!");
-					}
+				if (value === true){
+					// username exists, just fetch the already-existing codename
+					db.get("SELECT codename FROM usermap WHERE username = ?", username,
+					function(err, row){
+						return resolve(row.codename);
+					});
+				} else if (value === false){
+					// username does not exist, insert a new codename
+					return generate_unique_name().then(function(newname){
+						console.log("about to insert username: " + username + " and codename: " + newname);
+						db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname]);
+						return resolve(newname);
+					});
+				} else {
+					reject("got unexpected value from username_exists in get_code_name");
 				}
-			);
+			});
 		}
 	);
-// actual insertion:
-//	db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", username, codename);
 }
 
 // Tests the get_code_name function
@@ -109,8 +117,8 @@ function test_name(username){
 
 var dbinit = function(error) {
 	db.serialize(function() {
-  		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)");
-  	});
+		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)");
+	});
 };
 
 var test_data = function () {
@@ -125,21 +133,16 @@ var test_data = function () {
 };
 
 
-
 console.log("**********************************");
-var namepgood = test_name("Calliope");
-var namepbad = test_name("CalliopeZZZZ");
-namepgood.then(function(value){
-	console.log("good name value: " + value);
-});
-namepbad.then(function(value){
+test_name("Calliope").then(function(value){
 	console.log("bad name value: " + value);
+}).catch(function(error){
+	console.log("test_name something went wrong", error);
 });
 
-//  db.each("SELECT id, username, codename FROM usermap", function(err, row) {
-      //console.log(row.id + ": " + row.username + " : " + row.codename);
-//  });
+
 //dbinit();
 //test_data();
 
+// comment out the db.close when running in the REPL!
 db.close();
