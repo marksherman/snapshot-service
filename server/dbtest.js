@@ -1,7 +1,6 @@
-var sqlite3 = require('sqlite3').verbose();
+var sqlite3 = require('sqlite3');
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
-
 
 // returns a promise that resolves true or false
 function some_name_exists (colname, username) {
@@ -10,12 +9,16 @@ function some_name_exists (colname, username) {
 			// no need to serialize, db action is read-only
 			db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)", username,
 			function(err, row){
-				if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 1 ){
-					resolve(true);
-				} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
-					resolve(false);
+				if( err === null ){
+					if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 1 ){
+						return resolve(true);
+					} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
+						return resolve(false);
+					} else {
+						return reject("database did not return an expected value in some_name_exists");
+					}
 				} else {
-					reject("database did not return an expected value in some_name_exists");
+					return reject("Error from database in some_name_exists: " + err );
 				}
 			});
 		}
@@ -38,13 +41,13 @@ function generate_random_name(){
 	return tempname[0]+tempname[1];
 }
 
-// for testing purposes
+// for testing purposes, replaces generate_random_name
 function generate_fake_name(){
 	var names = ["shark", "ActualNewName"];
 	return names[Math.floor(Math.random() * names.length)];
 }
 
-// returns a promise, apparently (Mark doesn't completely know why)
+// returns a promise
 function generate_unique_name(){
 	// get a new name
 	var name = generate_random_name();
@@ -61,23 +64,23 @@ function generate_unique_name(){
 			console.log("name " + name + " not unique, trying again ");
 			return generate_unique_name();
 		} else {
-			reject("Unexpected value from codename_exists in generate_unique_name.");
+			return reject("Unexpected value from codename_exists in generate_unique_name.");
 		}
 	});
 }
 
 // Tests the generate_unique_name function
 function test_gen(){
-	console.log("testing random name generation....");
+	console.log("testing unique name generation....");
 	return generate_unique_name().then(function(val){
 		console.log("generated name: " + val);
 		return val;
 	}).catch(function(error){
-		console.log("something went wrong", error);
+		console.log("Something went wrong in test_gen: ", error);
 	});
 }
 
-
+// To be called by the snapshot system anonymizer
 function get_code_name (username) {
 	return new Promise(
 		function(resolve, reject){
@@ -87,17 +90,26 @@ function get_code_name (username) {
 					// username exists, just fetch the already-existing codename
 					db.get("SELECT codename FROM usermap WHERE username = ?", username,
 					function(err, row){
-						return resolve(row.codename);
+						if( err === null ){
+							return resolve(row.codename);
+						} else {
+							return reject("Problem with datbase in get_code_name: " + err);
+						}
 					});
 				} else if (value === false){
 					// username does not exist, insert a new codename
 					return generate_unique_name().then(function(newname){
 						console.log("about to insert username: " + username + " and codename: " + newname);
-						db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname]);
+						db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname],
+						function(err){
+							if( err !== null ){
+								return reject("Error from database while inserting new user: " + err );
+							}
+						});
 						return resolve(newname);
 					});
 				} else {
-					reject("got unexpected value from username_exists in get_code_name");
+					return reject("Got unexpected value from username_exists in get_code_name: " + value);
 				}
 			});
 		}
@@ -111,38 +123,26 @@ function test_name(username){
 		console.log("got code name: " + val);
 		return val;
 	}).catch(function(error){
-		console.log("test_name something went wrong", error);
+		console.log("Something went wrong in test_name: ", error);
 	});
 }
 
-var dbinit = function(error) {
+function dbinit () {
 	db.serialize(function() {
-		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)");
+		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
+		function(err){
+			if( err !== null ){
+				return reject("Error from database while creating table (dbinit): " + err );
+			}
+		});
 	});
-};
-
-var test_data = function () {
-	db.serialize(function() {
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "Brazentone", "shark");
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "Zazzle", "tank");
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "Calliope", "bottle");
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "RuPaul", "era");
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "Tanya", "skiboot");
-		db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", "Tony.Shaloub", "doctor");
-	});
-};
-
+}
 
 console.log("**********************************");
-test_name("Calliope").then(function(value){
-	console.log("bad name value: " + value);
-}).catch(function(error){
-	console.log("test_name something went wrong", error);
-});
+dbinit();
 
-
-//dbinit();
-//test_data();
+// Looks up a codename, adding a new one if not found.
+test_name("Polyhymnia");
 
 // comment out the db.close when running in the REPL!
 db.close();
