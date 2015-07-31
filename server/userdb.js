@@ -2,6 +2,20 @@ var sqlite3 = require('sqlite3');
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
 
+var exports = module.exports = {};
+
+/*******************************************************************************
+ * Provides:
+ *
+ * .init() - initialize the database if not (safe to always run on startup).
+ *           Throws error on failure.
+ *
+ * .close() - closes database (use when shutting down)
+ *
+ * .get_code_name(username) - gets the code name for the provided username.
+ *           Returns a promise that resolves to a string
+ ******************************************************************************/
+
 // returns a promise that resolves true or false
 function some_name_exists (colname, username) {
 	return new Promise(
@@ -81,7 +95,7 @@ function test_gen(){
 }
 
 // To be called by the snapshot system anonymizer
-function get_code_name (username) {
+var get_code_name = exports.get_code_name = function(username) {
 	return new Promise(
 		function(resolve, reject){
 			// Check if username already exists
@@ -114,7 +128,7 @@ function get_code_name (username) {
 			});
 		}
 	);
-}
+};
 
 // Tests the get_code_name function
 function test_name(username){
@@ -127,22 +141,17 @@ function test_name(username){
 	});
 }
 
-function dbinit () {
+exports.init = function () {
 	db.serialize(function() {
 		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
 		function(err){
 			if( err !== null ){
-				return reject("Error from database while creating table (dbinit): " + err );
+				throw "Error initializing database in db.run: " + err ;
 			}
 		});
 	});
-}
+};
 
-console.log("**********************************");
-dbinit();
-
-// Looks up a codename, adding a new one if not found.
-test_name("Polyhymnia");
-
-// comment out the db.close when running in the REPL!
-db.close();
+exports.close = function () {
+	db.close();
+};
