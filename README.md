@@ -1,7 +1,7 @@
 # snapshot-service
 Server to receive and store code snapshots for learning data analysis
 
-Requires: node.js v0.12.5 with modules jrpc2 express cors bluebird
+Requires: node.js v0.12.5 with modules listed below
 
 ##Server Setup
 ```
