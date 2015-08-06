@@ -16,12 +16,12 @@ function some_name_exists (colname, username) {
 	return new Promise(
 		function(resolve, reject) {
 			// no need to serialize, db action is read-only
-			db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)", username,
+			db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1) AS found", username,
 			function(err, row){
 				if( err === null ){
-					if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 1 ){
+					if( row["found"] === 1 ){
 						return resolve(true);
-					} else if( row["EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1)"] === 0 ){
+					} else if( row["found"] === 0 ){
 						return resolve(false);
 					} else {
 						return reject("database did not return an expected value in some_name_exists");
