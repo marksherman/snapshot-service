@@ -13,17 +13,17 @@ rpcServer.loadModules(__dirname + '/modules/', function () {
 });
 
 rpcServer.expose('sayHello',function(){
-    return Promise.resolve("Hello!");
-  });
+  return Promise.resolve("Hello!");
+});
 
 // inserts test data into and exercises user database
 var testusername = function(username){
-console.log("Querying username " + username);
-userdb.get_code_name(username).then(function(value){
-  console.log("Username: " + username + " Codename: " + value);
-}).catch(function(err){
-  console.log("Error in userdb.get_code_name: ", err);
-});
+  console.log("Querying username " + username);
+  userdb.get_code_name(username).then(function(value){
+    console.log("Username: " + username + " Codename: " + value);
+  }).catch(function(err){
+    console.log("Error in userdb.get_code_name: ", err);
+  });
 };
 
 ["Calliope", "Clio", "Euterpe", "Erato", "Melpomene", "Polyhymnia", "Terpsichore", "Thalia", "Urania"].forEach(
