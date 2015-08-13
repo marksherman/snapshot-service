@@ -5,9 +5,9 @@ module.exports = {
 function consolelog (data) {
   console.log("\n\n--------------------------------------\n");
   console.log("Snapshot recieved at " + new Date());
-  console.log(sanitizeFilename(data));
+  console.log(data);
 
-  return "0";
+  return Promise.resolve("0");
 }
 
 /**
