@@ -2,11 +2,22 @@ module.exports = {
   log: consolelog
 };
 
-function consolelog (data) {
+function consolelog (username, data) {
   console.log("\n\n--------------------------------------\n");
   console.log("Snapshot recieved at " + new Date());
+  console.log(username);
   console.log(data);
+  /*
+  var payload = JSON.parse(data);
+  var keys = Object.keys(payload);
 
+  console.log("Snapshot contains " + keys.length + " fields");
+  keys.forEach(function(cur, i, array){
+    console.log("\nFIELD " + i + " " + cur + "\n");
+    console.log(payload[cur]);
+  });
+  console.log(data);
+*/
   return Promise.resolve("0");
 }
 
