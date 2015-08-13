@@ -17,19 +17,23 @@ rpcServer.expose('sayHello',function(){
 });
 
 // inserts test data into and exercises user database
-var testusername = function(username){
+function testusername (username){
   console.log("Querying username " + username);
   userdb.get_code_name(username).then(function(value){
     console.log("Username: " + username + " Codename: " + value);
   }).catch(function(err){
     console.log("Error in userdb.get_code_name: ", err);
   });
-};
+}
 
-["Calliope", "Clio", "Euterpe", "Erato", "Melpomene", "Polyhymnia", "Terpsichore", "Thalia", "Urania"].forEach(
-  function(val, i, array){
-    testusername(val);
-  }
-);
+function do_userdb_tests (){
+  ["Calliope", "Clio", "Euterpe", "Erato", "Melpomene", "Polyhymnia", "Terpsichore", "Thalia", "Urania"].forEach(
+    function(val, i, array){
+      testusername(val);
+    }
+  );
+}
+
+//do_userdb_tests();
 
 console.log("server running from " + __dirname);
