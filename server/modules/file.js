@@ -2,10 +2,10 @@ module.exports = {
   log: consolelog
 };
 
-function consolelog (username, data) {
+function consolelog (metadata, data) {
   console.log("\n\n--------------------------------------\n");
   console.log("Snapshot recieved at " + new Date());
-  console.log(username);
+  console.log(metadata);
   console.log(data);
   /*
   var payload = JSON.parse(data);
