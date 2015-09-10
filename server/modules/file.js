@@ -2,11 +2,14 @@ module.exports = {
   log: consolelog
 };
 
-function consolelog (metadata, data) {
+function consolelog (metadata, projectContents) {
+  md = JSON.parse(metadata);
+  contents = JSON.parse(projectContents);
+
   console.log("\n\n--------------------------------------\n");
-  console.log("Snapshot recieved at " + new Date());
-  console.log(metadata);
-  console.log(data);
+  console.log("Snapshot (" + md.eventType + ") recieved at " + new Date());
+  console.log(md);
+  console.log(contents);
 
   return Promise.resolve("0");
 }
