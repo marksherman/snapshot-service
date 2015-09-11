@@ -2,16 +2,25 @@ module.exports = {
   log: consolelog
 };
 
+var userdb = require('../userdb.js');
+
 function consolelog (metadata, projectContents) {
   md = JSON.parse(metadata);
   contents = JSON.parse(projectContents);
+  return userdb.get_code_name(md.userName).then(function(codename)
+  {
+    console.log("\n\n--------------------------------------\n");
+    console.log("Snapshot (" + md.eventType + ") recieved at " + new Date());
+    console.log("Codename: " + codename);
+    console.log(md);
+    console.log(contents);
 
-  console.log("\n\n--------------------------------------\n");
-  console.log("Snapshot (" + md.eventType + ") recieved at " + new Date());
-  console.log(md);
-  console.log(contents);
-
-  return Promise.resolve("0");
+    return Promise.resolve("0");
+  }).catch(function(err)
+  {
+    console.log("Error caught from get_code_name: " + err);
+    return Promise.reject(err);
+  });
 }
 
 /**
