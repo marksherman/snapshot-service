@@ -10,8 +10,9 @@ function consolelog (metadata, projectContents) {
   return userdb.get_code_name(md.userName).then(function(codename)
   {
     console.log("\n\n--------------------------------------\n");
-    console.log("Snapshot (" + md.eventType + ") recieved at " + new Date());
+    console.log("Snapshot (" + md.eventType + ") received at " + new Date());
     console.log("Codename: " + codename);
+    console.log("Sane screenName: " + sanitizeFilename(md.screenName) );
     console.log(md);
     console.log(contents);
 
