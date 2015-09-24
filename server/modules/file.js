@@ -39,7 +39,7 @@ function saveProject (metadata, projectContents){
   //consolelog(metadata, projectContents);
 
   var md = JSON.parse(metadata);
-  var pc = JSON.parse(metadata);
+  var pc = JSON.parse(projectContents);
 
   var userRealName = md.userName;
 
