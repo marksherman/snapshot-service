@@ -2,7 +2,9 @@
 Server to receive and store code snapshots for learning data analysis.
 Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/).
 
-Requires: [node.js](http://nodejs.org) v4.1.1 with modules listed below
+Requires:
+* [node.js](http://nodejs.org) v4.1.1 with modules listed below
+* git installed (clearly, but it's actually used by the system)
 
 ##Server Setup
 ```
