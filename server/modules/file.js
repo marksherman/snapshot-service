@@ -45,7 +45,10 @@ function saveProject (metadata, projectContents){
 
   return userdb.get_code_name(userRealName).then(function(codename){
     md.userName = codename;
-    return saveProjectToGit(md, pc);
+    return saveProjectToGit(md, pc).catch(function(err){
+      console.log("Error caught from saveProjectToGit: " + err);
+      return Promise.reject(err);
+    });
   }).catch(function(err)
   {
     console.log("Error caught from get_code_name in saveProject: " + err);
@@ -98,19 +101,66 @@ function saveProjectToGit (metadata, projectContents)
   var             userFilesDir;// = playground.dbif.MFiles.UserFilesDir;
   var             progDir;// = playground.dbif.MFiles.ProgDir;
   var             gitDir;
-  var             System;// = liberated.dbif.System;
+  var             System =  {
+                              system: function(args, props) { console.log("\nSystem.system called: " + args + " w/ " + props);},
+                              writeFile: function(file, content) { console.log("\nSystem.writeFile called: " + file + " : " + content);}
+                            };
 
-  var userName        = metadata.userName;
+  // data that becomes a real file or directory name must be sanitized
+  var userName        = sanitize(metadata.userName);
   var projectName     = metadata.projectName;
-  var projectId       = metadata.projectId;
-  var screenName      = metadata.screenName;
+  var projectId       = sanitize(metadata.projectId);
+  var screenName      = sanitize(metadata.screenName);
   var sessionId       = metadata.sessionId;
   var yaversion       = metadata.yaversion;
   var languageVersion = metadata.languageVersion;
   var eventType       = metadata.eventType;
 
-  console.log(metadata);
-  console.log("GIT SAVE- USERNAME IS: " + userName );
+  var blocks          = projectContents.blocks;
+  var form            = projectContents.form;
+
+  //debugger;
+
+  // Create the git directory name
+  // Format: userFiles/userName/projectID.git/screen/{files}
+  gitDir = "./userFiles/" + userName + "/" + projectId + ".git/" + screenName;
+
+  // Be sure the file's git directory has been created
+  System.system( [ "mkdir", "-p", gitDir ]);
+
+  // Write the blocks code to a file in the screen's directory
+  try
+  {
+    System.writeFile( gitDir + "/blocks.xml",
+                      blocks,
+    {
+      encoding : "utf8"
+    });
+  }
+  catch (e)
+  {
+    console.log("\n\nFailed to create user code at " +
+    gitDir + "/blocks.xml" +
+    ": " + e + "\n\n");
+  }
+
+  // Write the component code (form) to a file in the screen's directory
+  try
+  {
+    System.writeFile( gitDir + "/form.json",
+                      form,
+    {
+      encoding : "utf8"
+    });
+  }
+  catch (e)
+  {
+    console.log("\n\nFailed to create user code at " +
+    gitDir + "/form.json" +
+    ": " + e + "\n\n");
+  }
+
+
   return Promise.resolve("0");
 }
 
