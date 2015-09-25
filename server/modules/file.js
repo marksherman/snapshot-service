@@ -12,7 +12,7 @@ function consolelog (metadata, projectContents) {
     console.log("\n\n--------------------------------------\n");
     console.log("Snapshot (" + md.eventType + ") received at " + new Date());
     console.log("Codename: " + codename);
-    console.log("Sane screenName: " + sanitizeFilename(md.screenName) );
+    console.log("Sane screenName: " + sanitize(md.screenName) );
     console.log(md);
     console.log(contents);
 
@@ -126,7 +126,7 @@ function saveProjectToGit (metadata, projectContents)
 * @return {String}
 *   The sanitized file name
 */
-function sanitizeFilename (name)
+function sanitize (name)
 {
   // Remove dangerous ..
   name = name.replace(/\.\./g, "DOTDOT");
