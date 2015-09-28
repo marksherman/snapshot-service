@@ -3,6 +3,7 @@ module.exports = {
 };
 
 var userdb = require('../userdb.js');
+var System = require('../liberated-system.js');
 
 function consolelog (metadata, projectContents) {
   md = JSON.parse(metadata);
@@ -26,7 +27,7 @@ function consolelog (metadata, projectContents) {
 
 /**
 * Save a project - call this one!
-* This wrapper anonymizes data for saveProjectToGit
+* Parses input and anonymizes data, then saves it.
 *
 * @param metadata {String}
 *
@@ -36,7 +37,6 @@ function consolelog (metadata, projectContents) {
 *   Zero upon success; non-zero otherwise
 */
 function saveProject (metadata, projectContents){
-  //consolelog(metadata, projectContents);
 
   var md = JSON.parse(metadata);
   var pc = JSON.parse(projectContents);
@@ -62,28 +62,12 @@ function saveProject (metadata, projectContents){
 *
 * Based on _saveProgram by Derrell Lipman
 *
-* @param metadata {String}
+* @param metadata {Map}
 *
-* @param projectContents {String}
-
-* TODO remove old param descriptors below
-* @param programName {}
-*   The name of the program being saved
-*
-* @param detail {String}
-*   Detail information saved with this version of the file
-*
-* @param code {String}
-*   The program's code to be saved
-*
-* @param notes {String?}
-*   If provided, the message to add as git notes for this commit
+* @param projectContents {Map}
 *
 * @return {Number}
 *   Zero upon success; non-zero otherwise
-*
-* @ignore(nodesqlite.Application.config)
-* @ignore(nodesqlite.Application.config.*)
 */
 function saveProjectToGit (metadata, projectContents)
 {
@@ -101,10 +85,11 @@ function saveProjectToGit (metadata, projectContents)
   var             userFilesDir;// = playground.dbif.MFiles.UserFilesDir;
   var             progDir;// = playground.dbif.MFiles.ProgDir;
   var             gitDir;
-  var             System =  {
+  var             screenDir;
+  /*var             System = {
                               system: function(args, props) { console.log("\nSystem.system called: " + args + " w/ " + props);},
                               writeFile: function(file, content) { console.log("\nSystem.writeFile called: " + file + " : " + content);}
-                            };
+                            };*/
 
   // data that becomes a real file or directory name must be sanitized
   var userName        = sanitize(metadata.userName);
@@ -121,21 +106,42 @@ function saveProjectToGit (metadata, projectContents)
 
   //debugger;
 
-  // Create the git directory name
+  // Create the directory name
   // Format: userFiles/userName/projectID.git/screen/{files}
-  gitDir = "./userFiles/" + userName + "/" + projectId + ".git/" + screenName;
+  gitDir = "./userFiles/" + userName + "/" + projectId + ".git";
+  screenDir = gitDir + "/" + screenName;
 
-  // Be sure the file's git directory has been created
-  System.system( [ "mkdir", "-p", gitDir ]);
+  // Write an error object parsing function for System library
+  var make_callback = function(function_name){
+    if(function_name === "system") {
+    return function(error, data){
+      if (error) throw "Error in System call " + function_name + ": " + error;
+      if (data.exitCode !== 0) throw "Error from shell in " + function_name + " stderr: " + data.stderr;
+      console.log("Exit code: " + data.exitCode);
+      console.log("stdout: " + data.stdout);
+      console.log("stderr: " + data.stderr);
+    };
+  } else if (function_name === "writeFile") {
+    return function(error){
+      if(error) throw "Error in system call " + function_name;
+    };
+  }
+  };
+
+  // Be sure the file's directory has been created
+  try {
+    System.system( [ "mkdir", "-p", screenDir ], { showStdout : true }, make_callback("system"));
+  } catch (e) {
+    console.log("\n\nFailed to create directory at " +
+    gitDir + "/blocks.xml" +
+    ": " + e + "\n\n");
+  }
 
   // Write the blocks code to a file in the screen's directory
   try
   {
-    System.writeFile( gitDir + "/blocks.xml",
-                      blocks,
-    {
-      encoding : "utf8"
-    });
+    System.writeFile( screenDir + "/blocks.xml", blocks,
+    { encoding : "utf8" }, make_callback("writeFile"));
   }
   catch (e)
   {
@@ -147,11 +153,8 @@ function saveProjectToGit (metadata, projectContents)
   // Write the component code (form) to a file in the screen's directory
   try
   {
-    System.writeFile( gitDir + "/form.json",
-                      form,
-    {
-      encoding : "utf8"
-    });
+    System.writeFile( screenDir + "/form.json", form,
+    { encoding : "utf8" }, make_callback("writeFile"));
   }
   catch (e)
   {
