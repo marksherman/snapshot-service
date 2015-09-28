@@ -208,7 +208,7 @@ var system = function(cmd, options, callback)
       {
         callback(null,
                  {
-                   exitCode : err == null ? 0 : err.code,
+                   exitCode : err === null ? 0 : err.code,
                    stdout   : stdout,
                    stderr   : stderr
                  });
