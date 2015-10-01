@@ -194,6 +194,7 @@ var readdir = function(directory)
 
 /**
  * Execute a system command.
+ * Note: does NOT use a shell, so shell expansions and wildcards don't work.
  *
  * @param cmd {Array}
  *   The command to be executed, as an array of the individual

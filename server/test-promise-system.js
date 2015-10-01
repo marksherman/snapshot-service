@@ -30,17 +30,16 @@ var testfile = 'TEST_' + date.getTime() + '.txt';
 
 console.log("\n@@@@@@ STARTING TESTS " + testfile);
 /*****************************************************************************/
- Promise.all([
 
-  sys.readdir('.')
+var p1 = sys.readdir('.')
   .then(
     function(data){
       console.log("ls . at start");
       makeThen("readdir")(data);
     },
-    makeCatch("readdir")),
+    makeCatch("readdir"));
 
-    sys.writeFile(
+var p2 = sys.writeFile(
       testfile,
       "Time: " + date.toTimeString() + "\nSecond line..... \n" +
       "This is file " + testfile + "\n"
@@ -65,19 +64,4 @@ console.log("\n@@@@@@ STARTING TESTS " + testfile);
             makeCatch("readFile"));
           },
 
-          makeCatch("writeFile")),
-
-        sys.system(['ls', '-la'],{ showStdout : true , showStderr : true}).then(
-          function(data){
-            makeThen("system")(data.exitCode);
-            makeThen("system")(data.stdout);
-          }, makeCatch("system"))
-
-        ]).then(function(data)
-        {
-          makeThen("ALL")();
-
-          sys.system(['rm', '-f', 'TEST_*'], { showStdout : false})
-          .then(makeThen("system/rm"),makeCatch("system/rm"));
-        },
-        makeCatch("ALL"));
+          makeCatch("writeFile"));
