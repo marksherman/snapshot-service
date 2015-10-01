@@ -1,14 +1,22 @@
-module.exports = {
-  log: saveProject
-};
-
 var userdb = require('../userdb.js');
-var System = require('../liberated-system.js');
+var System = require('../promise-system.js');
 
+/**
+* Logs a snapshot to console.
+* Can be used for debugging, but doesn't actually save anything!
+*
+* @param metadata {String}
+*
+* @param projectContents {String}
+*
+* @return promise {Number/Error}
+*   Zero upon success; Error object otherwise
+*/
 function consolelog (metadata, projectContents) {
   md = JSON.parse(metadata);
   contents = JSON.parse(projectContents);
-  return userdb.get_code_name(md.userName).then(function(codename)
+  return userdb.get_code_name(md.userName)
+  .then(function(codename)
   {
     console.log("\n\n--------------------------------------\n");
     console.log("Snapshot (" + md.eventType + ") received at " + new Date());
@@ -18,7 +26,8 @@ function consolelog (metadata, projectContents) {
     console.log(contents);
 
     return Promise.resolve("0");
-  }).catch(function(err)
+  })
+  .catch(function(err)
   {
     console.log("Error caught from get_code_name in consolelog: " + err);
     return Promise.reject(err);
@@ -33,8 +42,8 @@ function consolelog (metadata, projectContents) {
 *
 * @param projectContents {String}
 *
-* @return {Number}
-*   Zero upon success; non-zero otherwise
+* @return promise {Number/Error}
+*   Zero upon success; Error object otherwise
 */
 function saveProject (metadata, projectContents){
 
@@ -43,13 +52,17 @@ function saveProject (metadata, projectContents){
 
   var userRealName = md.userName;
 
-  return userdb.get_code_name(userRealName).then(function(codename){
+  return userdb.get_code_name(userRealName)
+  .then(function(codename)
+  {
     md.userName = codename;
-    return saveProjectToGit(md, pc).catch(function(err){
+    return saveProjectToGit(md, pc).catch(function(err)
+    {
       console.log("Error caught from saveProjectToGit: " + err);
       return Promise.reject(err);
     });
-  }).catch(function(err)
+  })
+  .catch(function(err)
   {
     console.log("Error caught from get_code_name in saveProject: " + err);
     return Promise.reject(err);
@@ -60,111 +73,122 @@ function saveProject (metadata, projectContents){
 * Save a program via git.
 * DO NOT CALL DIRECTLY - use saveProject
 *
-* Based on _saveProgram by Derrell Lipman
+* Based on _saveProgram, part of LearnCS by Derrell Lipman
+* github.com/derrell/LearnCS
 *
 * @param metadata {Map}
 *
 * @param projectContents {Map}
 *
-* @return {Number}
-*   Zero upon success; non-zero otherwise
+* @return promise {Number/Error}
+*   Zero upon success; Error object otherwise
 */
 function saveProjectToGit (metadata, projectContents)
 {
-  var             user;
-  var             ret;
-  var             whoAmI;
-  var             process;
-  var             exitValue;
-  var             reader;
-  var             writer;
-  var             line;
-  var             cmd;
-  var             hash;
-  var             mailOptions;
-  var             userFilesDir;// = playground.dbif.MFiles.UserFilesDir;
-  var             progDir;// = playground.dbif.MFiles.ProgDir;
-  var             gitDir;
-  var             screenDir;
-  /*var             System = {
-                              system: function(args, props) { console.log("\nSystem.system called: " + args + " w/ " + props);},
-                              writeFile: function(file, content) { console.log("\nSystem.writeFile called: " + file + " : " + content);}
-                            };*/
+  return new Promise(function(resolve, reject)
+  {
+    console.log("Recieve started " + Date());
+    // data that becomes a file or directory name must be sanitized
+    var userName        = sanitize(metadata.userName);
+    var projectName     = metadata.projectName;
+    var projectId       = sanitize(metadata.projectId);
+    var screenName      = sanitize(metadata.screenName);
+    var sessionId       = metadata.sessionId;
+    var yaversion       = metadata.yaversion;
+    var languageVersion = metadata.languageVersion;
+    var eventType       = metadata.eventType;
 
-  // data that becomes a real file or directory name must be sanitized
-  var userName        = sanitize(metadata.userName);
-  var projectName     = metadata.projectName;
-  var projectId       = sanitize(metadata.projectId);
-  var screenName      = sanitize(metadata.screenName);
-  var sessionId       = metadata.sessionId;
-  var yaversion       = metadata.yaversion;
-  var languageVersion = metadata.languageVersion;
-  var eventType       = metadata.eventType;
+    var blocks          = projectContents.blocks;
+    var form            = projectContents.form;
 
-  var blocks          = projectContents.blocks;
-  var form            = projectContents.form;
+    // Create the directory name
+    // Format: userFiles/userName/projectID.git/screen/{files}
+    gitDir = "./userFiles/" + userName + "/" + projectId + ".git";
+    screenDir = gitDir + "/" + screenName;
 
-  //debugger;
-
-  // Create the directory name
-  // Format: userFiles/userName/projectID.git/screen/{files}
-  gitDir = "./userFiles/" + userName + "/" + projectId + ".git";
-  screenDir = gitDir + "/" + screenName;
-
-  // Write an error object parsing function for System library
-  var make_callback = function(function_name){
-    if(function_name === "system") {
-    return function(error, data){
-      if (error) throw "Error in System call " + function_name + ": " + error;
-      if (data.exitCode !== 0) throw "Error from shell in " + function_name + " stderr: " + data.stderr;
-      console.log("Exit code: " + data.exitCode);
-      console.log("stdout: " + data.stdout);
-      console.log("stderr: " + data.stderr);
+    // Write an error object parsing function for System library
+    var make_callback = function(function_name){
+      if(function_name === "system") {
+        return function(error, data){
+          if (error) throw "Error in System call " + function_name + ": " + error;
+          if (data.exitCode !== 0) throw "Error from shell in " + function_name + " stderr: " + data.stderr;
+          console.log("Exit code: " + data.exitCode);
+          console.log("stdout: " + data.stdout);
+          console.log("stderr: " + data.stderr);
+        };
+      } else if (function_name === "writeFile") {
+        return function(error){
+          if(error) throw "Error in system call " + function_name;
+        };
+      }
     };
-  } else if (function_name === "writeFile") {
-    return function(error){
-      if(error) throw "Error in system call " + function_name;
-    };
-  }
-  };
+/*
+    .then(
+      function(data)
+      {
+        //
+      },
+      function(error)
+      {
+        // catch
 
-  // Be sure the file's directory has been created
-  try {
-    System.system( [ "mkdir", "-p", screenDir ], { showStdout : true }, make_callback("system"));
-  } catch (e) {
-    console.log("\n\nFailed to create directory at " +
-    gitDir + "/blocks.xml" +
-    ": " + e + "\n\n");
-  }
+        reject(error);
+      }
+    );
+*/
 
-  // Write the blocks code to a file in the screen's directory
-  try
-  {
-    System.writeFile( screenDir + "/blocks.xml", blocks,
-    { encoding : "utf8" }, make_callback("writeFile"));
-  }
-  catch (e)
-  {
-    console.log("\n\nFailed to create user code at " +
-    gitDir + "/blocks.xml" +
-    ": " + e + "\n\n");
-  }
+    // 1. Be sure the file's directory has been created
+    System.system(
+      [ "mkdir", "-p", screenDir ],
+      { showStdout : true })
+    .then(
+      function(data)
+      {
+        // 2. Write the blocks code to a file in the screen's directory
+        System.writeFile( screenDir + "/blocks.xml", blocks)
+        .then(
+          function(data)
+          {
+            // 3. Write the component code (form) to a file in the screen's directory
+            System.writeFile( screenDir + "/form.json", form)
+            .then(
+              function(data)
+              {
+                // 4
+                console.log("it did it!");
+                console.log("Recieve finished " + Date());
+              },
+              function(error)
+              {
+                // catch 3
+                console.log("\n\nFailed to create user code at " +
+                screenDir + "/form.json" +
+                ": " + e + "\n\n");
 
-  // Write the component code (form) to a file in the screen's directory
-  try
-  {
-    System.writeFile( screenDir + "/form.json", form,
-    { encoding : "utf8" }, make_callback("writeFile"));
-  }
-  catch (e)
-  {
-    console.log("\n\nFailed to create user code at " +
-    gitDir + "/form.json" +
-    ": " + e + "\n\n");
-  }
+                reject(error);
+              }
+            );
+          },
+          function(error)
+          {
+            // catch 2
+            console.log("\n\nFailed to create user code at " +
+            screenDir + "/blocks.xml" +
+            ": " + e + "\n");
+            reject(error);
+          }
+        );
+      },
+      function(error)
+      {
+        // catch 1
+        console.log("\n\nFailed to create directory at " + screenDir +
+        ": " + e + "\n");
+        reject(error);
+      }
+    );
 
-
-  return Promise.resolve("0");
+  });
 }
 
 /**
@@ -195,3 +219,8 @@ function sanitize (name)
 
   return name;
 }
+
+module.exports = {
+  log: saveProject
+  //log: consolelog
+};
