@@ -90,7 +90,7 @@ function saveProjectToGit (metadata, projectContents)
     console.log("Recieve started " + Date());
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(metadata.userName);
-    var projectName     = metadata.projectName;
+    var projectName     = sanitize(metadata.projectName);
     var projectId       = sanitize(metadata.projectId);
     var screenName      = sanitize(metadata.screenName);
     var sessionId       = metadata.sessionId;
@@ -103,25 +103,9 @@ function saveProjectToGit (metadata, projectContents)
 
     // Create the directory name
     // Format: userFiles/userName/projectID.git/screen/{files}
-    gitDir = "./userFiles/" + userName + "/" + projectId + ".git";
+    gitDir = "./userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
     screenDir = gitDir + "/" + screenName;
 
-    // Write an error object parsing function for System library
-    var make_callback = function(function_name){
-      if(function_name === "system") {
-        return function(error, data){
-          if (error) throw "Error in System call " + function_name + ": " + error;
-          if (data.exitCode !== 0) throw "Error from shell in " + function_name + " stderr: " + data.stderr;
-          console.log("Exit code: " + data.exitCode);
-          console.log("stdout: " + data.stdout);
-          console.log("stderr: " + data.stderr);
-        };
-      } else if (function_name === "writeFile") {
-        return function(error){
-          if(error) throw "Error in system call " + function_name;
-        };
-      }
-    };
 /*
     .then(
       function(data)
