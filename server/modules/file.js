@@ -87,7 +87,8 @@ function saveProjectToGit (metadata, projectContents)
 {
   return new Promise(function(resolve, reject)
   {
-    console.log("Recieve started " + Date());
+    var date = Date();
+    console.log("Recieve started " + date);
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(metadata.userName);
     var projectName     = sanitize(metadata.projectName);
@@ -106,71 +107,37 @@ function saveProjectToGit (metadata, projectContents)
     gitDir = "./userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
     screenDir = gitDir + "/" + screenName;
 
-/*
-    .then(
-      function(data)
-      {
-        //
-      },
-      function(error)
-      {
-        // catch
-
-        reject(error);
-      }
-    );
-*/
-
     // 1. Be sure the file's directory has been created
-    System.system(
+    console.log(date + " 1");
+    return System.system(
       [ "mkdir", "-p", screenDir ],
       { showStdout : true })
-    .then(
-      function(data)
-      {
-        // 2. Write the blocks code to a file in the screen's directory
-        System.writeFile( screenDir + "/blocks.xml", blocks)
-        .then(
-          function(data)
-          {
-            // 3. Write the component code (form) to a file in the screen's directory
-            System.writeFile( screenDir + "/form.json", form)
-            .then(
-              function(data)
-              {
-                // 4
-                console.log("it did it!");
-                console.log("Recieve finished " + Date());
-              },
-              function(error)
-              {
-                // catch 3
-                console.log("\n\nFailed to create user code at " +
-                screenDir + "/form.json" +
-                ": " + e + "\n\n");
-
-                reject(error);
-              }
-            );
-          },
-          function(error)
-          {
-            // catch 2
-            console.log("\n\nFailed to create user code at " +
-            screenDir + "/blocks.xml" +
-            ": " + e + "\n");
-            reject(error);
-          }
-        );
-      },
-      function(error)
-      {
-        // catch 1
-        console.log("\n\nFailed to create directory at " + screenDir +
-        ": " + e + "\n");
-        reject(error);
-      }
-    );
+      .then(
+        function(data)
+        {
+          // 2. Write the blocks code to a file in the screen's directory
+          console.log(date + " 2");
+          return System.writeFile( screenDir + "/blocks.xml", blocks);
+        })
+      .then(
+        function(data)
+        {
+          // 3. Write the component code (form) to a file in the screen's directory
+          console.log(date + " 3");
+          return System.writeFile( screenDir + "/form.json", form);
+        })
+      .then(
+        function(data)
+        {
+          // 4
+          console.log(date + " 4");
+          resolve("0");
+        })
+      .catch(
+        function(error){
+          console.log("Error in system calls in saveProjectToGit: " + error);
+          reject(error);
+        });
 
   });
 }
