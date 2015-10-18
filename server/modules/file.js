@@ -1,5 +1,6 @@
 var userdb = require('../userdb.js');
 var System = require('../promise-system.js');
+var console = require('../loglevel.js');
 
 /**
 * Logs a snapshot to console.
