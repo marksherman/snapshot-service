@@ -8,26 +8,21 @@
 /***********************************************/
 
 var flag_error   = true;
-var flag_general = true;
-var flag_debug   = true;
+var flag_utility = true;
+var flag_debug   = false;
 
 /***********************************************/
 
-var log_func        = console.log;
-var error_log_func  = console.error;
-var silent_func     = function(m) {};
+var silent_function     = function(m) {};
 
-var logerr = flag_error   ? error_log_func  : silent_function;
-var loggen = flag_general ? log_func    : silent_function;
-var logbug = flag_debug   ? log_func    : silent_function;
+var logerr  = flag_error   ? console.error  : silent_function;
+var logutil = flag_utility ? console.log    : silent_function;
+var logbug  = flag_debug   ? console.log    : silent_function;
 
 module.exports =
 {
-  err   : logerr,
+  log   : logutil,
   error : logerr,
-
-  log   : loggen,
-
   bug   : logbug,
   debug : logbug
 };

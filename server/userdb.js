@@ -1,6 +1,7 @@
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
+var Log = require('./loglevel.js');
 
 var exports = module.exports = {};
 
@@ -60,17 +61,17 @@ function generate_fake_name(){
 function generate_unique_name(){
 	// get a new name
 	var name = generate_random_name();
-	console.log("#UDB trying " + name);
+	Log.debug("#UDB trying " + name);
 	// check to make sure it is unique
 	return codename_exists(name).then(function(value){
-		console.log("#UDB exists value: " + value);
+		Log.debug("#UDB exists value: " + value);
 		if( value === false ){
 			// name not found. it's unique! return it.
-			console.log("#UDB new name: " + name );
+			Log.debug("#UDB new name: " + name );
 			return name;
 		} else if( value === true ) {
 			// name was found, try again.
-			console.log("#UDB name " + name + " not unique, trying again ");
+			Log.debug("#UDB name " + name + " not unique, trying again ");
 			return generate_unique_name();
 		} else {
 			return reject("Unexpected value from codename_exists in generate_unique_name.");
@@ -80,12 +81,12 @@ function generate_unique_name(){
 
 // Tests the generate_unique_name function
 function test_gen(){
-	console.log("#UDB testing unique name generation....");
+	Log.debug("#UDB testing unique name generation....");
 	return generate_unique_name().then(function(val){
-		console.log("#UDB generated name: " + val);
+		Log.debug("#UDB generated name: " + val);
 		return val;
 	}).catch(function(error){
-		console.log("#UDB Something went wrong in test_gen: ", error);
+		Log.error("#UDB Something went wrong in test_gen: ", error);
 	});
 }
 
@@ -108,7 +109,7 @@ var get_code_name = exports.get_code_name = function(username) {
 				} else if (value === false){
 					// username does not exist, insert a new codename
 					return generate_unique_name().then(function(newname){
-						console.log("#UDB about to insert username: " + username + " and codename: " + newname);
+						Log.debug("#UDB about to insert username: " + username + " and codename: " + newname);
 						db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname],
 						function(err){
 							if( err !== null ){
@@ -127,12 +128,12 @@ var get_code_name = exports.get_code_name = function(username) {
 
 // Tests the get_code_name function
 function test_name(username){
-	console.log("#UDB testing getting code name for " + username + "....");
+	Log.debug("#UDB testing getting code name for " + username + "....");
 	return get_code_name(username).then(function(val){
-		console.log("#UDB got code name: " + val);
+		Log.debug("#UDB got code name: " + val);
 		return val;
 	}).catch(function(error){
-		console.log("#UDB Something went wrong in test_name: ", error);
+		Log.debug("#UDB Something went wrong in test_name: ", error);
 	});
 }
 
@@ -151,9 +152,9 @@ exports.close = function () {
 	db.close();
 };
 
-console.log("#UDB Initializing user database (userdb.js)");
+Log.log("#UDB Initializing user database (userdb.js)");
 try {
     dbinit();
 } catch (e) {
-    console.log("#UDB Error in userdb.init: ", e);
+    Log.error("#UDB Error in userdb.init: ", e);
 }

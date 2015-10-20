@@ -1,6 +1,6 @@
 var userdb = require('../userdb.js');
 var System = require('../promise-system.js');
-var console = require('../loglevel.js');
+var Log = require('../loglevel.js');
 
 /**
 * Logs a snapshot to console.
@@ -19,18 +19,18 @@ function consolelog (metadata, projectContents) {
   return userdb.get_code_name(md.userName)
   .then(function(codename)
   {
-    console.log("\n\n--------------------------------------\n");
-    console.log("Snapshot (" + md.eventType + ") received at " + new Date());
-    console.log("Codename: " + codename);
-    console.log("Sane screenName: " + sanitize(md.screenName) );
-    console.log(md);
-    console.log(contents);
+    Log.log("\n\n--------------------------------------\n");
+    Log.log("Snapshot (" + md.eventType + ") received at " + new Date());
+    Log.log("Codename: " + codename);
+    Log.log("Sane screenName: " + sanitize(md.screenName) );
+    Log.log(md);
+    Log.log(contents);
 
     return Promise.resolve("0");
   })
   .catch(function(err)
   {
-    console.log("Error caught from get_code_name in consolelog: " + err);
+    Log.error("Error caught from get_code_name in consolelog: " + err);
     return Promise.reject(err);
   });
 }
@@ -59,13 +59,13 @@ function saveProject (metadata, projectContents){
     md.userName = codename;
     return saveProjectToGit(md, pc).catch(function(err)
     {
-      console.log("Error caught from saveProjectToGit: " + err);
+      Log.error("Error caught from saveProjectToGit: " + err);
       return Promise.reject(err);
     });
   })
   .catch(function(err)
   {
-    console.log("Error caught from get_code_name in saveProject: " + err);
+    Log.error("Error caught from get_code_name in saveProject: " + err);
     return Promise.reject(err);
   });
 }
@@ -89,7 +89,7 @@ function saveProjectToGit (metadata, projectContents)
   return new Promise(function(resolve, reject)
   {
     var date = Date();
-    console.log("Recieve started " + date);
+    Log.log("Recieve started " + date);
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(metadata.userName);
     var projectName     = sanitize(metadata.projectName);
@@ -114,12 +114,12 @@ function saveProjectToGit (metadata, projectContents)
     var blocksfile = "blocks.xml";
     var formfile = "form.json";
 
-    console.log("Files to commit will be: \n\t" +
+    Log.log("Files to commit will be: \n\t" +
       screenDir + "/" + blocksfile + "\n\t" +
       screenDir + "/" + formfile);
 
     // 1. Be sure the file's directory has been created
-    console.log(date + " 1");
+    Log.debug(date + " 1");
     return System.system(
       [ "mkdir", "-p", screenDir ],
       { showStdout : true })
@@ -127,21 +127,21 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 2. Write the blocks code to a file in the screen's directory
-          console.log(date + " 2");
+          Log.debug(date + " 2");
           return System.writeFile( screenDir + "/" + blocksfile, blocks);
         })
       .then(
         function(data)
         {
           // 3. Write the component code (form) to a file in the screen's directory
-          console.log(date + " 3");
+          Log.debug(date + " 3");
           return System.writeFile( screenDir + "/" + formfile, form);
         })
       .then(
         function(data)
         {
           // 4 Create the git repository
-          console.log(date + " 4");
+          Log.debug(date + " 4");
           return System.system([ "git", "init" ],
                          {
                            cwd        : gitDir,
@@ -152,7 +152,7 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 5 Identify the user to git
-          console.log(date + " 5");
+          Log.debug(date + " 5");
           return System.system( [
                            "git",
                            "config",
@@ -168,7 +168,7 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 6 Identify user's (fake) email to git
-          console.log(date + " 6");
+          Log.debug(date + " 6");
           return System.system( [
                            "git",
                            "config",
@@ -184,9 +184,9 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 7 Add files to this git repository
-          console.log(date + " 7");
-          console.log("cwd : " + screenDir);
-          console.log("files: " + blocksfile + " , " + formfile);
+          Log.debug(date + " 7");
+          Log.debug("cwd : " + screenDir);
+          Log.debug("files: " + blocksfile + " , " + formfile);
           return System.system( [
                           "git",
                           "add",
@@ -203,7 +203,7 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 8 Commit files
-          console.log(date + " 8");
+          Log.debug(date + " 8");
           return System.system(
             [
               "git",
@@ -225,14 +225,14 @@ function saveProjectToGit (metadata, projectContents)
         function(data)
         {
           // 9 Did the commit succeed?
-          console.log(date + " 9S");
+          Log.debug(date + " 9S");
           if (data.exitCode === 0)
           {
             // Succeded! Were notes specified?
-            console.log(date + " 9A");
+            Log.debug(date + " 9A");
             if (notes)
             {
-              console.log(date + " 9 Notes");
+              Log.debug(date + " 9 Notes");
               return System.system(
                 [
                   "git",
@@ -248,7 +248,7 @@ function saveProjectToGit (metadata, projectContents)
             }
             else
             {
-              console.log(date + " 9 No Notes");
+              Log.debug(date + " 9 No Notes");
               return data;
             }
           }
@@ -256,10 +256,10 @@ function saveProjectToGit (metadata, projectContents)
         function(err)
         {
             // Commit did not succeed
-            console.log(err.stderr);
+            Log.error(err.stderr);
 
             // 9F1 Check out the most recent version
-            console.log(date + " 9F1");
+            Log.debug(date + " 9F1");
             return System.system(
               [
                 "git",
@@ -274,7 +274,7 @@ function saveProjectToGit (metadata, projectContents)
               .then(function(data)
                 {
                   // 9F2 Append the commit mesasge as notes
-                  console.log(date + " 9F2");
+                  Log.debug(date + " 9F2");
                   return System.system(
                     [
                       "git",
@@ -291,7 +291,7 @@ function saveProjectToGit (metadata, projectContents)
               .then(function(data)
               {
                 // 9F3 Were notes specified too?
-                console.log(date + " 9F3");
+                Log.debug(date + " 9F3");
                 if (notes)
                 {
                   return System.system(
@@ -318,7 +318,7 @@ function saveProjectToGit (metadata, projectContents)
       // TODO add post-commit options and features, @ MFiles.js:277
       .catch(
         function(error){
-          console.log("Error in system calls in saveProjectToGit: " + error);
+          Log.debug("Error in system calls in saveProjectToGit: " + error);
           reject(error);
         });
 

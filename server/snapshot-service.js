@@ -4,6 +4,7 @@ var cors = require('cors');
 var userdb = require('./userdb.js');
 var app = express();
 var rpcServer = new rpc.Server();
+var Log = require('./loglevel.js');
 
 app.use(cors());
 
@@ -18,11 +19,11 @@ rpcServer.expose('sayHello',function(){
 
 // inserts test data into and exercises user database
 function testusername (username){
-  console.log("Querying username " + username);
+  Log.debug("Querying username " + username);
   userdb.get_code_name(username).then(function(value){
-    console.log("Username: " + username + " Codename: " + value);
+    Log.debug("Username: " + username + " Codename: " + value);
   }).catch(function(err){
-    console.log("Error in userdb.get_code_name: ", err);
+    Log.error("Error in userdb.get_code_name: ", err);
   });
 }
 
@@ -36,4 +37,4 @@ function do_userdb_tests (){
 
 //do_userdb_tests();
 
-console.log("server running from " + __dirname);
+Log.log("server running from " + __dirname);
