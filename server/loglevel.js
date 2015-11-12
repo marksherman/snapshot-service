@@ -1,7 +1,10 @@
 /**
  * Author: Mark Sherman <msherman@cs.uml.edu>
- * Part of snapshot-service, by Mark Sherman
  *
+ * Copyright 2015 Mark Sherman
+ *
+ * License:
+ *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
  * Set a flag to true to make that category print to console.
  */
 

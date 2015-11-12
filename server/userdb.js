@@ -1,3 +1,12 @@
+/**
+ * Author: Mark Sherman <msherman@cs.uml.edu>
+ *
+ * Copyright 2015 Mark Sherman
+ *
+ * License:
+ *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
+ */
+
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
