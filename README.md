@@ -1,6 +1,6 @@
 # snapshot-service
 Server to receive and store code snapshots for learning data analysis.
-Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/).
+Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/), but will work for any text-based data collection.
 
 Requires:
 * [node.js](http://nodejs.org) v4.1.1+ with modules listed below
