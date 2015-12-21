@@ -12,7 +12,7 @@
 
 var flag_error   = true;
 var flag_utility = true;
-var flag_debug   = false;
+var flag_debug   = true;
 
 /***********************************************/
 

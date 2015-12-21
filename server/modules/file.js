@@ -22,18 +22,16 @@ var Log = require('../loglevel.js');
 * @return promise {Number/Error}
 *   Zero upon success; Error object otherwise
 */
-function consolelog (metadata, projectContents) {
-  md = JSON.parse(metadata);
-  contents = JSON.parse(projectContents);
-  return userdb.get_code_name(md.userName)
+function consolelog (projectData) {
+  data = JSON.parse(projectData);
+  return userdb.get_code_name(data.userName)
   .then(function(codename)
   {
     Log.log("\n\n--------------------------------------\n");
-    Log.log("Snapshot (" + md.eventType + ") received at " + new Date());
+    Log.log("Snapshot (" + data.eventType + ") received at " + new Date());
     Log.log("Codename: " + codename);
-    Log.log("Sane screenName: " + sanitize(md.screenName) );
-    Log.log(md);
-    Log.log(contents);
+    Log.log("Sane screenName: " + sanitize(data.screenName) );
+    Log.log(data);
 
     return Promise.resolve("0");
   })
@@ -55,18 +53,17 @@ function consolelog (metadata, projectContents) {
 * @return promise {Number/Error}
 *   Zero upon success; Error object otherwise
 */
-function saveProject (metadata, projectContents){
+function saveProject (projectData){
 
-  var md = JSON.parse(metadata);
-  var pc = JSON.parse(projectContents);
+  var data = JSON.parse(projectData);
 
-  var userRealName = md.userName;
+  var userRealName = data.userName;
 
   return userdb.get_code_name(userRealName)
   .then(function(codename)
   {
-    md.userName = codename;
-    return saveProjectToGit(md, pc).catch(function(err)
+    data.userName = codename;
+    return saveProjectToGit(data).catch(function(err)
     {
       Log.error("Error caught from saveProjectToGit: " + err);
       return Promise.reject(err);
@@ -93,27 +90,27 @@ function saveProject (metadata, projectContents){
 * @return promise {Number/Error}
 *   Zero upon success; Error object otherwise
 */
-function saveProjectToGit (metadata, projectContents)
+function saveProjectToGit (projectData)
 {
   return new Promise(function(resolve, reject)
   {
     var date = Date();
     Log.log("Recieve started " + date);
     // data that becomes a file or directory name must be sanitized
-    var userName        = sanitize(metadata.userName);
-    var projectName     = sanitize(metadata.projectName);
-    var projectId       = sanitize(metadata.projectId);
-    var screenName      = sanitize(metadata.screenName);
-    var sessionId       = metadata.sessionId;
-    var yaversion       = metadata.yaversion;
-    var languageVersion = metadata.languageVersion;
-    var eventType       = metadata.eventType;
+    var userName        = sanitize(projectData.userName);
+    var projectName     = sanitize(projectData.projectName);
+    var projectId       = sanitize(projectData.projectId);
+    var screenName      = sanitize(projectData.screenName);
+    var sessionId       = projectData.sessionId;
+    var yaversion       = projectData.yaversion;
+    var languageVersion = projectData.languageVersion;
+    var eventType       = projectData.eventType;
 
     var detail          = "committed automatically by snapshot server";
     var notes           = null;
 
-    var blocks          = projectContents.blocks;
-    var form            = projectContents.form;
+    var blocks          = projectData.blocks;
+    var form            = projectData.form;
 
     // Create the directory name
     // Format: userFiles/userName/projectID.git/screen/{files}
