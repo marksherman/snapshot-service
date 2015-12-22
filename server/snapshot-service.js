@@ -10,7 +10,7 @@
 var rpc = require('jrpc2');
 var express = require('express');
 var cors = require('cors');
-var userdb = require('./userdb.js');
+var userdb = require('./userdb.js')();
 var app = express();
 var rpcServer = new rpc.Server();
 var Log = require('./loglevel.js');

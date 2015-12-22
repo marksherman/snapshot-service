@@ -7,8 +7,10 @@
  *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
  */
 
+var _ = require('lodash');
+var path = require('path');
+
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('usermap.sqlite3');
 var codename = require('codename')();
 var Log = require('./loglevel.js');
 
@@ -21,149 +23,153 @@ var exports = module.exports = {};
  * .close() - closes database (use when shutting down)
  ******************************************************************************/
 
-// returns a promise that resolves true or false
-function some_name_exists (colname, username) {
-	return new Promise(
-		function(resolve, reject) {
-			// no need to serialize, db action is read-only
-			db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1) AS found", username,
-			function(err, row){
-				if( err === null ){
-					if( row.found === 1 ){
-						return resolve(true);
-					} else if( row.found === 0 ){
-						return resolve(false);
-					} else {
-						return reject("database did not return an expected value in some_name_exists");
-					}
-				} else {
-					return reject("Error from database in some_name_exists: " + err );
-				}
-			});
-		}
-	);
-}
+/**
+ * Module that gets existing codename from real username, generating on demand
+ *
+ * @param {Object} opts - An object containing one param (`db_path`) describing
+ *   what file to use as the database
+ * @type Function
+ * @return {Object}
+ */
+module.exports = function (opts) {
+	var defaults = {
+		db_path: path.resolve(__dirname, 'usermap.sqlite3')
+	};
 
-// returns a promise that resolves true or false
-function username_exists (username) {
-	return some_name_exists("username", username);
-}
+	var options = _.extend({}, defaults, opts);
+	var db = new sqlite3.Database(options.db_path);
+	var exports = {};
 
-// returns a promise that resolves true or false
-function codename_exists (username) {
-	return some_name_exists("codename", username);
-}
-
-// returns a string, NOT a promise
-function generate_random_name(){
-	var tempname = codename.generate(['random'],['adjectives','animals']);
-	return tempname[0]+tempname[1];
-}
-
-// for testing purposes, replaces generate_random_name
-function generate_fake_name(){
-	var names = ["shark", "ActualNewName"];
-	return names[Math.floor(Math.random() * names.length)];
-}
-
-// returns a promise
-function generate_unique_name(){
-	// get a new name
-	var name = generate_random_name();
-	Log.debug("#UDB trying " + name);
-	// check to make sure it is unique
-	return codename_exists(name).then(function(value){
-		Log.debug("#UDB exists value: " + value);
-		if( value === false ){
-			// name not found. it's unique! return it.
-			Log.debug("#UDB new name: " + name );
-			return name;
-		} else if( value === true ) {
-			// name was found, try again.
-			Log.debug("#UDB name " + name + " not unique, trying again ");
-			return generate_unique_name();
-		} else {
-			return reject("Unexpected value from codename_exists in generate_unique_name.");
-		}
-	});
-}
-
-// Tests the generate_unique_name function
-function test_gen(){
-	Log.debug("#UDB testing unique name generation....");
-	return generate_unique_name().then(function(val){
-		Log.debug("#UDB generated name: " + val);
-		return val;
-	}).catch(function(error){
-		Log.error("#UDB Something went wrong in test_gen: ", error);
-	});
-}
-
-// To be called by the snapshot system anonymizer
-var get_code_name = exports.get_code_name = function(username) {
-	return new Promise(
-		function(resolve, reject){
-			// Check if username already exists
-			return username_exists(username).then(function(value) {
-				if (value === true){
-					// username exists, just fetch the already-existing codename
-					db.get("SELECT codename FROM usermap WHERE username = ?", username,
-					function(err, row){
-						if( err === null ){
-							return resolve(row.codename);
+	/* Some utility functions, not exposed in module */
+	
+	// returns a promise that resolves true or false
+	function some_name_exists (colname, username) {
+		return new Promise(
+			function(resolve, reject) {
+				// no need to serialize, db action is read-only
+				db.get("SELECT EXISTS(SELECT 1 from usermap WHERE " + colname + " = ? LIMIT 1) AS found", username,
+				function(err, row){
+					if( err === null ){
+						if( row.found === 1 ){
+							return resolve(true);
+						} else if( row.found === 0 ){
+							return resolve(false);
 						} else {
-							return reject("Problem with datbase in get_code_name: " + err);
+							return reject("database did not return an expected value in some_name_exists");
 						}
-					});
-				} else if (value === false){
-					// username does not exist, insert a new codename
-					return generate_unique_name().then(function(newname){
-						Log.debug("#UDB about to insert username: " + username + " and codename: " + newname);
-						db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname],
-						function(err){
-							if( err !== null ){
-								return reject("Error from database while inserting new user: " + err );
-							}
-						});
-						return resolve(newname);
-					});
-				} else {
-					return reject("Got unexpected value from username_exists in get_code_name: " + value);
-				}
-			});
-		}
-	);
-};
+					} else {
+						return reject("Error from database in some_name_exists: " + err );
+					}
+				});
+			}
+		);
+	}
 
-// Tests the get_code_name function
-function test_name(username){
-	Log.debug("#UDB testing getting code name for " + username + "....");
-	return get_code_name(username).then(function(val){
-		Log.debug("#UDB got code name: " + val);
-		return val;
-	}).catch(function(error){
-		Log.debug("#UDB Something went wrong in test_name: ", error);
-	});
-}
+	// returns a promise that resolves true or false
+	function username_exists (username) {
+		return some_name_exists("username", username);
+	}
 
-var dbinit = function () {
-	db.serialize(function() {
-		db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
-		function(err){
-			if( err !== null ){
-				throw "Error initializing database in db.run: " + err ;
+	// returns a promise that resolves true or false
+	function codename_exists (username) {
+		return some_name_exists("codename", username);
+	}
+
+	// returns a string, NOT a promise
+	function generate_random_name(){
+		var tempname = codename.generate(['random'],['adjectives','animals']);
+		return tempname[0]+tempname[1];
+	}
+
+	// returns a promise
+	function generate_unique_name(){
+		// get a new name
+		var name = generate_random_name();
+		Log.debug("#UDB trying " + name);
+		// check to make sure it is unique
+		return codename_exists(name).then(function(value){
+			Log.debug("#UDB exists value: " + value);
+			if( value === false ){
+				// name not found. it's unique! return it.
+				Log.debug("#UDB new name: " + name );
+				return name;
+			} else if( value === true ) {
+				// name was found, try again.
+				Log.debug("#UDB name " + name + " not unique, trying again ");
+				return generate_unique_name();
+			} else {
+				return reject("Unexpected value from codename_exists in generate_unique_name.");
 			}
 		});
-	});
-};
+	}
 
-exports.close = function () {
-	db.close();
-};
+	var dbinit = function () {
+		db.serialize(function() {
+			db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
+			function(err){
+				if( err !== null ){
+					throw "Error initializing database in db.run: " + err ;
+				}
+			});
+		});
+	};
 
-Log.log("#UDB Initializing user database (userdb.js)");
-try {
-    dbinit();
-} catch (e) {
-    Log.error("#UDB Error in userdb.init: ", e);
-}
+	Log.log("#UDB Initializing user database (" + options.db_path + ")");
+	try {
+	    dbinit();
+	} catch (e) {
+	    Log.error("#UDB Error in userdb.init: ", e);
+	}
+
+	/**
+	 * The Code-Name Look-up-er
+	 *
+	 * @param {String} username - real username to look up
+	 * @return {String} - corresponding code name
+	 */
+	 exports.get_code_name = function(username) {
+		 return new Promise(
+			 function(resolve, reject){
+				 // Check if username already exists
+				 return username_exists(username).then(function(value) {
+					 if (value === true){
+						 // username exists, just fetch the already-existing codename
+						 db.get("SELECT codename FROM usermap WHERE username = ?", username,
+						 function(err, row){
+							 if( err === null ){
+								 return resolve(row.codename);
+							 } else {
+								 return reject("Problem with datbase in get_code_name: " + err);
+							 }
+						 });
+					 } else if (value === false){
+						 // username does not exist, insert a new codename
+						 return generate_unique_name().then(function(newname){
+							 Log.debug("#UDB about to insert username: " + username + " and codename: " + newname);
+							 db.run("INSERT INTO usermap (username,codename,date_added) VALUES (?,?,strftime('%s','now'))", [username, newname],
+							 function(err){
+								 if( err !== null ){
+									 return reject("Error from database while inserting new user: " + err );
+								 }
+							 });
+							 return resolve(newname);
+						 });
+					 } else {
+						 return reject("Got unexpected value from username_exists in get_code_name: " + value);
+					 }
+				 });
+			 }
+		 );
+	 };
+
+	/**
+ 	 * Close database (for use at system shutdown)
+ 	 *
+ 	 * @return {String} - corresponding code name
+ 	 */
+	exports.close = function () {
+ 		return db.close();
+ 	};
+
+	return exports;
+};
