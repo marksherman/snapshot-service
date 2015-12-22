@@ -9,7 +9,7 @@ Requires:
 ##Server Setup
 ```
 cd server
-npm install codename cors express jrpc2 sqlite3
+npm install codename cors express jrpc2 sqlite3 lodash path
 ```
 
 ##Run Server
