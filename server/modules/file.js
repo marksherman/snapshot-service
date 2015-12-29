@@ -9,7 +9,7 @@
 
 var userdb = require('../userdb.js')();
 var System = require('../promise-system.js');
-var Log = require('../loglevel.js');
+var Log = require('../loglevel.js')();
 
 /**
 * Logs a snapshot to console.
