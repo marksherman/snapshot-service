@@ -13,7 +13,7 @@ var cors = require('cors');
 var userdb = require('./userdb.js')();
 var app = express();
 var rpcServer = new rpc.Server();
-var Log = require('./loglevel.js');
+var Log = require('./loglevel.js')();
 
 app.use(cors());
 

@@ -12,7 +12,6 @@ var path = require('path');
 
 var sqlite3 = require('sqlite3').verbose();
 var codename = require('codename')();
-var Log = require('./loglevel.js');
 
 var exports = module.exports = {};
 
@@ -38,6 +37,7 @@ module.exports = function (opts) {
 
 	var options = _.extend({}, defaults, opts);
 	var db = new sqlite3.Database(options.db_path);
+	var Log = require('./loglevel.js')(options);
 	var exports = {};
 
 	/* Some utility functions, not exposed in module */
