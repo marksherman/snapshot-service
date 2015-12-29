@@ -9,7 +9,6 @@
 
 var _ = require('lodash');
 var path = require('path');
-
 var sqlite3 = require('sqlite3').verbose();
 var codename = require('codename')();
 
@@ -17,9 +16,10 @@ var exports = module.exports = {};
 
 /*******************************************************************************
  * Provides:
- * .get_code_name(username) - gets the code name for the provided username.
+ * .get_code_name(promise: username) - gets the code name for the provided username.
  *           Returns a promise that resolves to a string
  * .close() - closes database (use when shutting down)
+ * .db_path - path of database file
  ******************************************************************************/
 
 /**
@@ -41,7 +41,7 @@ module.exports = function (opts) {
 	var exports = {};
 
 	/* Some utility functions, not exposed in module */
-	
+
 	// returns a promise that resolves true or false
 	function some_name_exists (colname, username) {
 		return new Promise(
@@ -119,6 +119,7 @@ module.exports = function (opts) {
 	    dbinit();
 	} catch (e) {
 	    Log.error("#UDB Error in userdb.init: ", e);
+			throw e;
 	}
 
 	/**
@@ -170,6 +171,13 @@ module.exports = function (opts) {
 	exports.close = function () {
  		return db.close();
  	};
+
+	/**
+	 * Path of current db file
+	 *
+	 * @return {String} - path
+	 */
+	exports.db_path = options.db_path;
 
 	return exports;
 };
