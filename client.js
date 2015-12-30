@@ -70,7 +70,7 @@ var ss_xhrError = function() {
  * @param {string} dataUrl The url to request.
  * @param {string} snapshot data to send.
  */
-blockly_send = function(eventType, projectData) {
+blockly_send = function(projectData) {
 
 	var data = [
 		JSON.stringify(projectData)
@@ -83,7 +83,7 @@ blockly_send = function(eventType, projectData) {
 		"id": ++idno }    // dirty, i know -Mark
 	);
 
-	console.log("\n\n------ Snapshot! (" + eventType + ")------ " + new Date() + "\n");
+	console.log("\n\n------ Snapshot! ------ " + new Date() + "\n");
 	//console.log("Data:\n");
 	//console.log(content);
 
@@ -94,7 +94,11 @@ blockly_send = function(eventType, projectData) {
 /*******************************/
 
 var send = function(){
-	blockly_send("Test button click", testdata);
+	blockly_send(_.assign({}, testdata,
+		{
+			"eventType":"Testbutton click"
+		}
+	));
 };
 
 var jiggle = function(){
@@ -106,7 +110,11 @@ var jiggle = function(){
 		_.random(0,999).toString() +
 		"\">\n    <mutation items=\"2\"></mutation>\n    <value name=\"ADD0\">\n      <block type=\"color_red\" id=\"21\">\n        <field name=\"COLOR\">#ff0000</field>\n      </block>\n    </value>\n  </block>\n  <yacodeblocks ya-version=\"140\" language-version=\"19\"></yacodeblocks>\n</xml>";
 
-	jiggledData = _.assign({}, testdata, {"blocks":jiggledBlocks});
+	jiggledData = _.assign({}, testdata,
+		{
+			"blocks":jiggledBlocks,
+			"eventType":"Test jiggle button click"
+		});
 
-	blockly_send("Test jiggle button click", jiggledData);
+	blockly_send(jiggledData);
 };
