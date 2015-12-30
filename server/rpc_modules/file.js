@@ -3,13 +3,29 @@
  *
  * Copyright 2015 Mark Sherman
  *
+ * The RPC module that takes file data from the client and files it.
+ * The RPC client will call the "log" procedure with one argument-
+ *   The one argument is a JSON object of file contents and metadata.
+ *
+ * Function exports.log must be a procedure that will do the filing.
+ * Included are two:
+ *  "saveProject" which commits, internally, to git.
+ *  "consolelog" for debugging, dumping data to console
+ *
+ * Git commit process based on work of Derrell Lipman:
+ *   https://github.com/derrell/LearnCS/blob/master/dbif/source/class/playground/dbif/MFiles.js
+ *
  * License:
  *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
  */
 
+
 var userdb = require('../userdb.js')();
 var System = require('../promise-system.js');
 var Log = require('../loglevel.js')();
+
+var dumpToFile = true;  // consolelog can optionally dump the received JSON to file
+if (dumpToFile) { var fs = require("fs"); }
 
 /**
 * Logs a snapshot to console.
@@ -23,7 +39,21 @@ var Log = require('../loglevel.js')();
 *   Zero upon success; Error object otherwise
 */
 function consolelog (projectData) {
+
   data = JSON.parse(projectData);
+
+  if(dumpToFile){
+    var filename = "./datadumps/" + "serialized_" + Date.now();
+    fs.writeFile(filename, JSON.stringify(data), function(e){
+      if(e){
+        Log.error("Dump Error: " + e);
+        throw e;
+      } else {
+        Log.debug("Dumped projectData to " + filename);
+      }
+    });
+  }
+
   return userdb.get_code_name(data.userName)
   .then(function(codename)
   {
@@ -63,7 +93,11 @@ function saveProject (projectData){
   .then(function(codename)
   {
     data.userName = codename;
-    return saveProjectToGit(data).catch(function(err)
+    return saveProjectToGit(data)
+    .then(function(data){
+      return Promise.resolve("0");
+    })
+    .catch(function(err)
     {
       Log.error("Error caught from saveProjectToGit: " + err);
       return Promise.reject(err);

@@ -28,3 +28,4 @@ node_modules
 
 server/usermap.sqlite3
 server/userFiles
+server/datadumps
