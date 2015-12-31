@@ -8,10 +8,7 @@
     "url": "git+https://github.com/marksherman/snapshot-service.git"
   },
   "author": "Mark Sherman <msherman@cs.uml.edu> (http://www.cs.uml.edu/~msherman/)",
-  "licenses": [{
-    "type": "Apache-2.0",
-    "url": "https://github.com/marksherman/snapshot-service/blob/master/LICENSE"
-  }],
+  "license": "Apache-2.0",
   "contributors": [
     "Kim Douglas (https://github.com/kmbrlynn)",
     "Derrell Lipman (https://github.com/derrell)"
