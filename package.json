@@ -1,0 +1,41 @@
+{
+  "name": "snapshot-service",
+  "version": "0.1.0",
+  "description": "Server to receive and store code snapshots for learning data analysis. Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/), but can work for any text-based data collection.",
+  "main": "server/snapshot-service.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marksherman/snapshot-service.git"
+  },
+  "author": "Mark Sherman",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/marksherman/snapshot-service/issues"
+  },
+  "scripts": {
+    "dev": "node server/snapshot-service.js"
+  },
+  "homepage": "https://github.com/marksherman/snapshot-service#readme",
+  "dependencies": {
+    "codename": "0.0.4",
+    "cors": "^2.7.1",
+    "express": "^4.13.3",
+    "jrpc2": "^1.0.5",
+    "lodash": "^3.10.1",
+    "path": "^0.12.7",
+    "sqlite3": "^3.1.1"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "chai-as-promised": "^5.2.0",
+    "mocha": "^2.3.4"
+  },
+  "keywords": [
+    "server",
+    "git",
+    "research",
+    "snapshot",
+    "instrumentation",
+    "deidentification"
+  ]
+}
