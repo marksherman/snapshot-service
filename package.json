@@ -7,13 +7,22 @@
     "type": "git",
     "url": "git+https://github.com/marksherman/snapshot-service.git"
   },
-  "author": "Mark Sherman",
-  "license": "Apache-2.0",
+  "author": "Mark Sherman <msherman@cs.uml.edu> (http://www.cs.uml.edu/~msherman/)",
+  "licenses": [{
+    "type": "Apache-2.0",
+    "url": "https://github.com/marksherman/snapshot-service/blob/master/LICENSE"
+  }],
+  "contributors": [
+    "Kim Douglas (https://github.com/kmbrlynn)",
+    "Derrell Lipman (https://github.com/derrell)"
+  ],
   "bugs": {
     "url": "https://github.com/marksherman/snapshot-service/issues"
   },
   "scripts": {
-    "dev": "node server/snapshot-service.js"
+    "start": "node server/snapshot-service.js",
+    "test": "make -C server test",
+    "postinstall": "git submodule init; git submodule update"
   },
   "homepage": "https://github.com/marksherman/snapshot-service#readme",
   "dependencies": {
