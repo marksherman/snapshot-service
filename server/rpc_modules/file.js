@@ -22,7 +22,11 @@
 
 var userdb = require('../userdb.js')();
 var System = require('../promise-system.js');
-var Log = require('../loglevel.js')();
+var Log = require('../loglevel.js')(
+  {
+    "log_debug": false
+  }
+);
 
 var dumpToFile = true;  // consolelog can optionally dump the received JSON to file
 if (dumpToFile) { var fs = require("fs"); }
@@ -43,7 +47,7 @@ function consolelog (projectData) {
   data = JSON.parse(projectData);
 
   if(dumpToFile){
-    var filename = "./datadumps/" + "serialized_" + Date.now();
+    var filename = __dirname + "/../datadumps/" + "serialized_" + Date.now();
     fs.writeFile(filename, JSON.stringify(data), function(e){
       if(e){
         Log.error("Dump Error: " + e);
@@ -148,7 +152,7 @@ function saveProjectToGit (projectData)
 
     // Create the directory name
     // Format: userFiles/userName/projectID.git/screen/{files}
-    var gitDir = "./userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
+    var gitDir = __dirname + "/../userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
     var screenDir = gitDir + "/" + screenName;
 
     var blocksfile = "blocks.xml";
