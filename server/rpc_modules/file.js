@@ -289,7 +289,7 @@ function saveProjectToGit (projectData)
             else
             {
               Log.debug(date + " 9 No Notes");
-              return Promise.resolve(data);
+              return resolve(data);
             }
           }
         },
@@ -349,7 +349,7 @@ function saveProjectToGit (projectData)
                 }
                 else
                 {
-                  return Promise.resolve(data); //noop, return current promise
+                  return resolve(data); //noop, return current promise
                 }
               });
               // end of commit-failed case
