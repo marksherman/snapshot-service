@@ -151,7 +151,7 @@ function saveProjectToGit (projectData)
     var form            = projectData.form;
 
     // Create the directory name
-    // Format: userFiles/userName/projectID.git/screen/{files}
+    // Format: userFiles/userName/projectName#projectID.git/screen/{files}
     var gitDir = __dirname + "/../userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
     var screenDir = gitDir + "/" + screenName;
 
