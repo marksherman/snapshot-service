@@ -77,7 +77,7 @@ module.exports = function (opts) {
 
 	// returns a string, NOT a promise
 	function generate_random_name(){
-		var tempname = codename.generate(['random'],['adjectives','animals']);
+		var tempname = codename.generate(['random'],['cities','animals']);
 		return tempname[0]+tempname[1];
 	}
 
