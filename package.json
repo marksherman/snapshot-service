@@ -1,6 +1,6 @@
 {
   "name": "snapshot-service",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Server to receive and store code snapshots for learning data analysis. Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/), but can work for any text-based data collection.",
   "main": "server/snapshot-service.js",
   "repository": {
