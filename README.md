@@ -6,23 +6,21 @@ Requires:
 * [node.js](http://nodejs.org) v4.2+ with modules listed below
 * git installed (it is used by the system as the data storage backend) (known to work at git version 1.9.1+)
 
-##Server Setup
-A package.json is provided in the root to install server dependencies.
-```
-npm install 
-```
+##Installation
+* Clone this [git repository](https://github.com/marksherman/snapshot-service).
+* In the root, run ``npm install`` to download necessary extensions.
 
 ##Run Server
 From root directory:
 ```
 npm start
 ```
-Or, from ```server``` directory, run ```node snapshot-service.js```.
+Or, from ``server`` directory, run ``node snapshot-service.js``.
 
 ##Test Client
 The test client requires google's closure library as a submodule. This should be automatically downloaded during npm's installation.
 
-Open ```client.html```, and view the javascript console. By default the client will connect to server running on localhost:8000.
+Open ``client.html``, and view the javascript console. By default the client will connect to server running on localhost:8000.
 There are two buttons:
 * **Send Test Data**: always sends the exact same data. Useful for detecting no-change commits.
 * **Jiggle and Send**: slightly modifies the data randomly and sends.
@@ -36,8 +34,8 @@ Run app inventor locally, and it will connect to the server, above, also running
 I recommended opening the javascript console in the browser when using the App Inventor instance, and watching the terminal where the snapshot server is running. Both will show the snapshots as they are received, which should be on any blocks change, and more.
 
 ##Unit Tests - work in progress
-Included are partial unit tests. The filesystem unit and the anonymizer unit are currently well exercised by the unit tests. The development dependecies were installed during ```npm install``` earlier, so testing should work after that, from root:
+Included are partial unit tests. The development dependecies were installed during ``npm install`` earlier, so testing should work after that, from root:
 ```
 npm test
 ```
-Or, if already in the ```server``` directory, simply run ```make test```.
+Or, if already in the ``server`` directory, simply run ``make test``.
