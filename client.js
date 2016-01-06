@@ -2,10 +2,10 @@ var count = 101;
 
 var testdata =
 {
-	"userName":"test@example.com",
-	"projectName":"asdf",
-	"projectId":"5066549580791808",
-	"screenName":"5066549580791808_Screen1",
+	"userName":"test@client.html",
+	"projectName":"TestClientProject",
+	"projectId":"9999999999999999",
+	"screenName":"Screen1",
 	"sessionId":"2be55c43-d3af-4806-8694-ccc6ec93414b",
 	"yaversion":140,
 	"languageVersion":19,
