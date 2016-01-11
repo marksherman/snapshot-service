@@ -19,14 +19,14 @@
  *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
  */
 
-
+var defaults =
+{
+  "log_debug": false
+};
 var userdb = require('../userdb.js')();
 var System = require('../promise-system.js');
-var Log = require('../loglevel.js')(
-  {
-    "log_debug": false
-  }
-);
+var Log = require('../loglevel.js')(defaults);
+var git = require('../savegit.js')(defaults);
 
 var dumpToFile = true;  // consolelog can optionally dump the received JSON to file
 if (dumpToFile) { var fs = require("fs"); }
@@ -118,6 +118,9 @@ function saveProject (projectData){
 * Save a program via git.
 * DO NOT CALL DIRECTLY - use saveProject
 *
+* Needs to return a promise that resolves.
+* The calling 'saveProject' function will then resolve for the RPC.
+*
 * Based on _saveProgram, part of LearnCS by Derrell Lipman
 * github.com/derrell/LearnCS
 *
@@ -133,7 +136,7 @@ function saveProjectToGit (projectData)
   return new Promise(function(resolve, reject)
   {
     var date = Date();
-    Log.log("Recieve started " + date);
+    Log.log("\nRecieve started " + date);
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(projectData.userName);
     var projectName     = sanitize(projectData.projectName);
@@ -143,9 +146,14 @@ function saveProjectToGit (projectData)
     var yaversion       = projectData.yaversion;
     var languageVersion = projectData.languageVersion;
     var eventType       = projectData.eventType;
+    var sendDate        = projectData.sendDate;
 
     var detail          = "committed automatically by snapshot server";
-    var notes           = null;
+    var notes           = "sendDate: " + sendDate + "\n" +
+                          "eventType: " + eventType + "\n" +
+                          "sessionID: " + sessionId + "\n" +
+                          "yaversion: " + yaversion + "\n" +
+                          "languageVersion: " + languageVersion;
 
     var blocks          = projectData.blocks;
     var form            = projectData.form;
@@ -163,203 +171,24 @@ function saveProjectToGit (projectData)
       screenDir + "/" + formfile);
 
     // 1. Be sure the file's directory has been created
-    Log.debug(date + " 1");
-    return System.system(
-      [ "mkdir", "-p", screenDir ],
-      { showStdout : true })
-      .then(
-        function(data)
-        {
-          // 2. Write the blocks code to a file in the screen's directory
-          Log.debug(date + " 2");
-          return System.writeFile( screenDir + "/" + blocksfile, blocks);
+    Log.debug(date + " 0");
+    return git.mkScreenDir(screenDir)()
+      .then( git.writeFile(screenDir, blocksfile, blocks) )
+      .then( git.writeFile(screenDir, formfile, form) )
+      .then( git.createRepo(gitDir) )
+      .then( git.setUser(gitDir, userName) )
+      .then( git.setFakeEmail(gitDir) )
+      .then( git.addFiles(screenDir, blocksfile, formfile) )
+      .catch(
+        function(error){
+          Log.debug("Error in system calls in saveProjectToGit, prior to commit: " + error);
+          reject(error);
         })
-      .then(
-        function(data)
-        {
-          // 3. Write the component code (form) to a file in the screen's directory
-          Log.debug(date + " 3");
-          return System.writeFile( screenDir + "/" + formfile, form);
-        })
-      .then(
-        function(data)
-        {
-          // 4 Create the git repository
-          Log.debug(date + " 4");
-          return System.system([ "git", "init" ],
-                         {
-                           cwd        : gitDir,
-                           showStdout : true
-                         });
-        })
-      .then(
-        function(data)
-        {
-          // 5 Identify the user to git
-          Log.debug(date + " 5");
-          return System.system( [
-                           "git",
-                           "config",
-                           "user.name",
-                           userName
-                         ],
-                         {
-                           cwd        : gitDir,
-                           showStdout : true
-                         } );
-        })
-      .then(
-        function(data)
-        {
-          // 6 Identify user's (fake) email to git
-          Log.debug(date + " 6");
-          return System.system( [
-                           "git",
-                           "config",
-                           "user.email",
-                           "anonymous@noplace.at.all"
-                         ],
-                         {
-                           cwd        : gitDir,
-                           showStdout : true
-                         } );
-        })
-      .then(
-        function(data)
-        {
-          // 7 Add files to this git repository
-          Log.debug(date + " 7");
-          Log.debug("cwd : " + screenDir);
-          Log.debug("files: " + blocksfile + " , " + formfile);
-          return System.system( [
-                          "git",
-                          "add",
-                          blocksfile,
-                          formfile
-                        ],
-                         {
-                           cwd        : screenDir,
-                           showStdout : true
-                         } );
-        }
-      )
-      .then(
-        function(data)
-        {
-          // 8 Commit files
-          Log.debug(date + " 8");
-          return System.system(
-            [
-              "git",
-              "commit",
-              "-m",
-              detail,
-              "--"//,
-              //screenDir + "/" + blocksfile,
-              //screenDir + "/" + formfile
-            ],
-            {
-              cwd        : gitDir,
-              showStdout : true
-            } );
-
-        }
-      )
-      .then(
-        function(data)
-        {
-          // 9 Did the commit succeed?
-          Log.debug(date + " 9S");
-          if (data.exitCode === 0)
-          {
-            // Succeded! Were notes specified?
-            Log.debug(date + " 9A");
-            if (notes)
-            {
-              Log.debug(date + " 9 Notes");
-              return System.system(
-                [
-                  "git",
-                  "notes",
-                  "append",
-                  "-m",
-                  notes + "\n-----\n"
-                ],
-                {
-                  cwd        : gitDir,
-                  showStdout : true
-                } );
-            }
-            else
-            {
-              Log.debug(date + " 9 No Notes");
-              return resolve(data);
-            }
-          }
-        },
-        function(err)
-        {
-            // Commit did not succeed
-            Log.error(err.stderr);
-
-            // 9F1 Check out the most recent version
-            Log.debug(date + " 9F1");
-            return System.system(
-              [
-                "git",
-                "checkout",
-                blocksfile,
-                formfile
-              ],
-              {
-                cwd        : screenDir,
-                showStdout : true
-              })
-              .then(function(data)
-                {
-                  // 9F2 Append the commit mesasge as notes
-                  Log.debug(date + " 9F2");
-                  return System.system(
-                    [
-                      "git",
-                      "notes",
-                      "append",
-                      "-m",
-                      detail + (notes ? "\n" : "\n-----\n")
-                    ],
-                    {
-                      cwd        : gitDir,
-                      showStdout : true
-                    } );
-                })
-              .then(function(data)
-              {
-                // 9F3 Were notes specified too?
-                Log.debug(date + " 9F3");
-                if (notes)
-                {
-                  return System.system(
-                    [
-                      "git",
-                      "notes",
-                      "append",
-                      "-m",
-                      notes + "\n-----\n"
-                    ],
-                    {
-                      cwd        : gitDir,
-                      showStdout : true
-                    } );
-                }
-                else
-                {
-                  return resolve(data); //noop, return current promise
-                }
-              });
-              // end of commit-failed case
-          }
-      )
+      .then( git.commit(gitDir, detail) )
+      .then( git.afterCommitSucceed(gitDir, notes),
+             git.afterCommitFail(gitDir, screenDir, blocksfile, formfile, detail, notes) )
       // TODO add post-commit options and features, @ MFiles.js:277
+      .then(resolve("0"))
       .catch(
         function(error){
           Log.debug("Error in system calls in saveProjectToGit: " + error);

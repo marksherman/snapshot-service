@@ -71,9 +71,14 @@ var ss_xhrError = function() {
  * @param {string} snapshot data to send.
  */
 blockly_send = function(projectData) {
+	pd = _.assign({}, projectData,
+		{
+			"sendDate":new Date().toJSON()
+		}
+	);
 
 	var data = [
-		JSON.stringify(projectData)
+		JSON.stringify(pd)
 	];
 
 	var content = goog.json.serialize(
