@@ -20,7 +20,7 @@ describe('userdb.js',function(){
   });
 
   describe("Initialize database and check file path", function(){
-
+    this.slow(500);
     it('should initialize without throwing exception and return path name', function(){
       db = require('../userdb.js')(
         {

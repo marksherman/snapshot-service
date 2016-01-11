@@ -19,14 +19,14 @@
  *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
  */
 
+var defaults =
+{
+  "log_debug": false
+};
 var userdb = require('../userdb.js')();
 var System = require('../promise-system.js');
-var Log = require('../loglevel.js')(
-  {
-    "log_debug": false
-  }
-);
-var git = require('../savegit.js')();
+var Log = require('../loglevel.js')(defaults);
+var git = require('../savegit.js')(defaults);
 
 var dumpToFile = true;  // consolelog can optionally dump the received JSON to file
 if (dumpToFile) { var fs = require("fs"); }
@@ -118,6 +118,9 @@ function saveProject (projectData){
 * Save a program via git.
 * DO NOT CALL DIRECTLY - use saveProject
 *
+* Needs to return a promise that resolves.
+* The calling 'saveProject' function will then resolve for the RPC.
+*
 * Based on _saveProgram, part of LearnCS by Derrell Lipman
 * github.com/derrell/LearnCS
 *
@@ -143,9 +146,14 @@ function saveProjectToGit (projectData)
     var yaversion       = projectData.yaversion;
     var languageVersion = projectData.languageVersion;
     var eventType       = projectData.eventType;
+    var sendDate        = projectData.sendDate;
 
     var detail          = "committed automatically by snapshot server";
-    var notes           = null;
+    var notes           = "sendDate: " + sendDate + "\n" +
+                          "eventType: " + eventType + "\n" +
+                          "sessionID: " + sessionId + "\n" +
+                          "yaversion: " + yaversion + "\n" +
+                          "languageVersion: " + languageVersion;
 
     var blocks          = projectData.blocks;
     var form            = projectData.form;
@@ -171,8 +179,13 @@ function saveProjectToGit (projectData)
       .then( git.setUser(gitDir, userName) )
       .then( git.setFakeEmail(gitDir) )
       .then( git.addFiles(screenDir, blocksfile, formfile) )
+      .catch(
+        function(error){
+          Log.debug("Error in system calls in saveProjectToGit, prior to commit: " + error);
+          reject(error);
+        })
       .then( git.commit(gitDir, detail) )
-      .then( git.afterCommitSucceed(notes),
+      .then( git.afterCommitSucceed(gitDir, notes),
              git.afterCommitFail(gitDir, screenDir, blocksfile, formfile, detail, notes) )
       // TODO add post-commit options and features, @ MFiles.js:277
       .then(resolve("0"))

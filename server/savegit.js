@@ -30,14 +30,6 @@ module.exports = function (opts) {
 
   var Log = require('./loglevel.js')(options);
 
-  // Utility: check return value of System.System
-  var onReject = (result) => {
-    Log.error("REJECTION/ERROR return code: " + result.exitCode);
-    Log.error("> std out: " + result.stdout);
-    Log.error("> std err: " + result.stderr);
-    return Promise.reject(result);
-  };
-
   // 1 Be sure the file's directory has been created
   exports.mkScreenDir = (screenDir) => {
     return function(data){
@@ -132,7 +124,7 @@ module.exports = function (opts) {
   //    exitCode: 0
   //    stdout
   //    stderr
-  exports.afterCommitSucceed = (notes) => {
+  exports.afterCommitSucceed = (gitDir, notes) => {
     return function(data){
       Log.debug(Date() + " 9A.");
       if (notes)
