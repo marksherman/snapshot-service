@@ -34,7 +34,7 @@ function sayHi() {
 goog.require('goog.net.XhrIo');
 
 //var dataUrl = 'http://msp.cs.uml.edu/api';
-var dataUrl = 'http://localhost:8000';
+var dataUrl = 'http://localhost:8000/v1.0';
 
 var idno = 0;
 

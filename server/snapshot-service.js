@@ -17,12 +17,12 @@ var Log = require('./loglevel.js')();
 app.use(cors());
 
 rpcServer.loadModules(__dirname + '/rpc_modules/', function () {
-  app.post('/', rpc.middleware(rpcServer));
-  app.listen(8000);
+  app.post('/v1.0', rpc.middleware(rpcServer));
+  app.listen(8000, function() {
+    Log.log("server running from " + __dirname);
+  });
 });
 
 rpcServer.expose('sayHello',function(){
   return Promise.resolve("Hello!");
 });
-
-Log.log("server running from " + __dirname);
