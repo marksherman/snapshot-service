@@ -27,5 +27,7 @@ module.exports = function(opts) {
   exports.log     = options.log_utility ? console.log    : silent_function;
   exports.debug   = options.log_debug   ? console.log    : silent_function;
 
+  exports.silent = silent_function;
+
   return exports;
 };
