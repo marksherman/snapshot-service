@@ -17,6 +17,11 @@ npm start
 ```
 Or, from ``server`` directory, run ``node snapshot-service.js``.
 
+##Server Maintenance
+The server creates a collection of git repositories, one for each project. This collection can grow quickly, and requires occasional "repacking" to optimize disk space, and, more importantly, disk inodes. Change into the ``server`` directory and run ``gc.sh`` to clean up the repositories. This can take some time, and should be done _before_ you run out of space or inodes. 
+
+As a reminder, you can use ``df -i`` to check the inode usage on your disk. A classroom full of students can rip through 400k inodes in linux quite easily, and requires recompaction every few days, or more. 
+
 ##Test Client
 The test client requires google's closure library as a submodule. This should be automatically downloaded during npm's installation.
 
