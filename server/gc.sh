@@ -21,7 +21,7 @@ function git_linus {
 cd userFiles
 D=`pwd`
 echo $D
-for dir in *; do
+for dir in */; do
 	echo $D/$dir
 	cd $D/$dir
 	for gitdir in *.git; do
