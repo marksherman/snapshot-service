@@ -24,7 +24,6 @@ var defaults =
   "log_debug": false
 };
 var userdb = require('../userdb.js')();
-var System = require('../promise-system.js');
 var Log = require('../loglevel.js')(defaults);
 var git = require('../savegit.js')(defaults);
 
@@ -44,7 +43,7 @@ if (dumpToFile) { var fs = require("fs"); }
 */
 function consolelog (projectData) {
 
-  data = JSON.parse(projectData);
+  var data = JSON.parse(projectData);
 
   if(dumpToFile){
     var filename = __dirname + "/../datadumps/" + "serialized_" + Date.now();
@@ -98,7 +97,7 @@ function saveProject (projectData){
   {
     data.userName = codename;
     return saveProjectToGit(data)
-    .then(function(data){
+    .then(function(){
       return Promise.resolve("0");
     })
     .catch(function(err)

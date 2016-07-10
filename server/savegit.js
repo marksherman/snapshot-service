@@ -32,7 +32,7 @@ module.exports = function (opts) {
 
   // 1 Be sure the file's directory has been created
   exports.mkScreenDir = (screenDir) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 1.");
       return System.system(
         [ "mkdir", "-p", screenDir ],
@@ -43,7 +43,7 @@ module.exports = function (opts) {
 
   // 2,3 Write the blocks/component code to a file in the screen's directory
   exports.writeFile = (screenDir, filename, filecontents) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 2/3.");
       return System.writeFile( screenDir + "/" + filename, filecontents);
     };
@@ -51,7 +51,7 @@ module.exports = function (opts) {
 
   // 4 Create the git repository
   exports.createRepo = (gitDir) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 4.");
       return System.system([ "git", "init" ],
       {
@@ -63,7 +63,7 @@ module.exports = function (opts) {
 
   // 5 Identify the user to git
   exports.setUser = (gitDir, userName) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 5.");
       return System.system(
         [ "git", "config", "user.name", userName],
@@ -77,7 +77,7 @@ module.exports = function (opts) {
 
   // 6 Identify user's (fake) email to git
   exports.setFakeEmail = (gitDir) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 6.");
       return System.system(
         [ "git", "config", "user.email", "anonymous@noplace.at.all"],
@@ -91,7 +91,7 @@ module.exports = function (opts) {
 
   // 7 Add files to this git repository
   exports.addFiles = (screenDir, blocksfile, formfile) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 7.");
       Log.debug("cwd : " + screenDir);
       Log.debug("files: " + blocksfile + " , " + formfile);
@@ -107,7 +107,7 @@ module.exports = function (opts) {
 
   // 8 Commit files
   exports.commit = (gitDir, detail) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 8.");
       return System.system(
         ["git", "commit", "-m", detail, "--"],
@@ -148,7 +148,7 @@ module.exports = function (opts) {
 
   // internal util: commit detail as notes
   var commitDetailAsNotes = (gitDir, detail, notes) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 9F2.");
       return System.system(
         [ "git", "notes", "append", "-m",
@@ -189,7 +189,7 @@ module.exports = function (opts) {
   // This usually means no files changed, and is ok.
   // Add the commit details to the git notes.
   exports.afterCommitFail = (gitDir, screenDir, blocksfile, formfile, detail, notes) => {
-    return function(data){
+    return function(){
       Log.debug(Date() + " 9F1.");
       return System.system(
         [ "git", "checkout", blocksfile, formfile ],
