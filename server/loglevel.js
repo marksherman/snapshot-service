@@ -17,7 +17,7 @@ var defaults = {
   log_debug: true
 };
 
-var silent_function     = function(m) { };
+var silent_function     = function() { };
 
 module.exports = function(opts) {
   var options = _.extend({}, defaults, opts);
