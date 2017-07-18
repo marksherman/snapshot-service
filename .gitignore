@@ -31,3 +31,6 @@ server/userFiles
 server/datadumps
 nohup.out*
 backups
+
+.DS_Store
+.idea
