@@ -21,14 +21,22 @@
 
 var defaults =
 {
-  "log_debug": false
+  "log_debug": true
 };
 var userdb = require('../userdb.js')();
 var Log = require('../loglevel.js')(defaults);
 var git = require('../savegit.js')(defaults);
 
-var dumpToFile = true;  // consolelog can optionally dump the received JSON to file
-if (dumpToFile) { var fs = require("fs"); }
+var dumpToFile = false;  // consolelog can optionally dump the received JSON to file
+var fs = require("fs");
+var mkdirp = require("mkdirp");
+
+/* Specifies which on-disk file saving routine to use.
+ * Options currently are saveProjectToFile and saveProjectToGit */
+var saveProjectTo = saveProjectToFile;
+
+/* Directory root for collected data */
+var dataDir = __dirname + "/../userFiles/";
 
 /**
 * Logs a snapshot to console.
@@ -96,13 +104,13 @@ function saveProject (projectData){
   .then(function(codename)
   {
     data.userName = codename;
-    return saveProjectToGit(data)
+    return saveProjectTo(data)
     .then(function(){
       return Promise.resolve("0");
     })
     .catch(function(err)
     {
-      Log.error("Error caught from saveProjectToGit: " + err);
+      Log.error("Error caught from saveProjectTo*: " + err);
       return Promise.reject(err);
     });
   })
@@ -159,7 +167,7 @@ function saveProjectToGit (projectData)
 
     // Create the directory name
     // Format: userFiles/userName/projectName#projectID.git/screen/{files}
-    var gitDir = __dirname + "/../userFiles/" + userName + "/" + projectName + "#" + projectId + ".git";
+    var gitDir = dataDir + userName + "/" + projectName + "#" + projectId + ".git";
     var screenDir = gitDir + "/" + screenName;
 
     var blocksfile = "blocks.xml";
@@ -194,6 +202,59 @@ function saveProjectToGit (projectData)
           reject(error);
         });
 
+  });
+}
+
+function saveProjectToFile (projectData)
+{
+  return new Promise(function(resolve, reject)
+  {
+    var date = Date();
+    Log.log("\nRecieve started " + date);
+    // data that becomes a file or directory name must be sanitized
+    var userName        = sanitize(projectData.userName);
+    var projectName     = sanitize(projectData.projectName);
+    var projectId       = sanitize(projectData.projectId);
+    var screenName      = sanitize(projectData.screenName);
+    // var sessionId       = projectData.sessionId;
+    // var yaversion       = projectData.yaversion;
+    // var languageVersion = projectData.languageVersion;
+    // var eventType       = projectData.eventType;
+    var sendDate        = sanitize(projectData.sendDate);
+
+    // var blocks          = projectData.blocks;
+    // var form            = projectData.form;
+
+    projectData.userName = userName;
+    projectData.projectName = projectName;
+    projectData.projectId = projectId;
+    projectData.screenName = screenName;
+    projectData.sendDate = sendDate;
+
+    // Create the directory name
+    // Format: userFiles/userName/projectName#projectID.git/screen/{files}
+    var projectDir = dataDir + userName + "/" + projectName + "#" + projectId;
+    var screenDir = projectDir + "/" + screenName;
+    var filePath = screenDir + "/snapshot_" + sendDate + ".json";
+
+    Log.log("File to save will be: \n\t" + filePath);
+
+    // 1. Be sure the file's directory has been created
+    mkdirp(screenDir, (err) => {
+      if(err){
+        Log.error("Error in creating screenDir: " + err);
+        reject(err);
+      }
+      // 2. Write the file
+      fs.writeFile(filePath, JSON.stringify(projectData), function(err){
+        if(err){
+          Log.error("Error in writing snapshot " + filePath);
+          reject(err);
+        }
+        Log.debug("Dumped snapshot to " + filePath);
+        resolve("0");
+      });
+    });
   });
 }
 
