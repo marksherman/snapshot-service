@@ -1,5 +1,6 @@
 #!/bin/bash
-date=$(date +"%Y-%m-%d-%H_%M_%S")
-mv nohup.out nohup.out.$date
+# This script starts the service in "server mode" - handled by 'forever'
+# Before this will work, do `node install forever -g`
 
-exec nohup npm start &
+forever start /home/ubuntu/snapshot-service/server/snapshot-service.js
+
