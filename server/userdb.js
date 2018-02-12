@@ -30,7 +30,8 @@ var codename = require('codename')();
 */
 module.exports = function (opts) {
   var defaults = {
-    db_path: path.resolve(__dirname, 'usermap.sqlite3')
+    db_path: path.resolve(__dirname, 'usermap.sqlite3'),
+    log_debug: false	// if log_debug is set to true, identity data may be printed to console log!
   };
 
   var options = _.extend({}, defaults, opts);
