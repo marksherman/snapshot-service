@@ -1,5 +1,3 @@
-const chai = require('chai');
-
 describe('loglevel.js', () => {
   describe('defaults all true', () => {
     const log = require('../loglevel.js')();

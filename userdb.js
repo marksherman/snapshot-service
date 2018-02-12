@@ -1,11 +1,11 @@
 /**
-* Author: Mark Sherman <msherman@cs.uml.edu>
-*
-* Copyright 2015 Mark Sherman
-*
-* License:
-*   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
-*/
+ * Author: Mark Sherman <shermanm@mit.edu>
+ *
+ * Copyright 2015-2017 Mark Sherman
+ *
+ * License:
+ *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
+ */
 
 var _ = require('lodash');
 var path = require('path');

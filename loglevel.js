@@ -1,10 +1,11 @@
 /**
- * Author: Mark Sherman <msherman@cs.uml.edu>
+ * Author: Mark Sherman <shermanm@mit.edu>
  *
- * Copyright 2015 Mark Sherman
+ * Copyright 2015-2017 Mark Sherman
  *
  * License:
- *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
+ *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
  * Set a flag to true to make that category print to console.
  * Flags can be passed as an option object at invocation.
  * See defaults object below.

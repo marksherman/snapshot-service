@@ -3,44 +3,44 @@ Server to receive and store code snapshots for learning data analysis.
 Designed for [MIT App Inventor](http://appinventor.mit.edu/explore/), but can work for any text-based data collection.
 
 Requires:
-* [node.js](http://nodejs.org) v4.2+ with modules listed below
-* git installed (it is used by the system as the data storage backend) (known to work at git version 1.9.1+)
+* [node.js](http://nodejs.org) v8.9.4+
 
-##Installation
+## Installation
 * Clone this [git repository](https://github.com/marksherman/snapshot-service).
-* In the root, run ``npm install`` to download necessary extensions.
+* In that directory, run ``npm install`` to download necessary extensions.
 
-##Run Server
-From root directory:
+## Run Server
+From the root directory:
 ```
 npm start
 ```
-Or, from ``server`` directory, run ``node snapshot-service.js``.
+Which will start a background process you can interrogate using ``forever list``. 
+(You will have to ``npm install forever -g`` to conveniently use forever without plunging into node_modules from the command line.)
 
-##Server Maintenance
-The server creates a collection of git repositories, one for each project. This collection can grow quickly, and requires occasional "repacking" to optimize disk space, and, more importantly, disk inodes. Change into the ``server`` directory and run ``gc.sh`` to clean up the repositories. This can take some time, and should be done _before_ you run out of space or inodes. 
+To run directly for testing, use ``node snapshot-service.js``.
 
-As a reminder, you can use ``df -i`` to check the inode usage on your disk. A classroom full of students can rip through 400k inodes in linux quite easily, and requires recompaction every few days, or more. 
-
-##Test Client
-The test client requires google's closure library as a submodule. This should be automatically downloaded during npm's installation.
-
-Open ``client.html``, and view the javascript console. By default the client will connect to server running on localhost:8000.
-There are two buttons:
-* **Send Test Data**: always sends the exact same data. Useful for detecting no-change commits.
-* **Jiggle and Send**: slightly modifies the data randomly and sends.
-
-##App Inventor Client
+## MIT App Inventor
 This service is made to receive data from a snapshot-enabled branch of MIT App Inventor.
 To use, clone and set up [this branch of App Inventor](https://github.com/marksherman/appinventor-sources/tree/snapshot-service).
 
 Run app inventor locally, and it will connect to the server, above, also running locally.
 
-I recommended opening the javascript console in the browser when using the App Inventor instance, and watching the terminal where the snapshot server is running. Both will show the snapshots as they are received, which should be on any blocks change, and more.
+I recommended opening the javascript console in the browser when using the App Inventor instance, and watching the 
+terminal where the snapshot server is running. Both will show the snapshots as they are received, which should be on any
+blocks change, and more.
 
-##Unit Tests - work in progress
-Included are partial unit tests. The development dependecies were installed during ``npm install`` earlier, so testing should work after that, from root:
+## Test Client
+The text client is extremely basic and not generally useful except for development of this service.
+The test client requires google's closure library as a submodule. This will be automatically downloaded during npm's installation.
+
+Open ``client/client.html``, and view the javascript console. By default the client will connect to server running on localhost:8000.
+There are two buttons:
+* **Send Test Data**: always sends the exact same data. Useful for detecting no-change commits.
+* **Jiggle and Send**: slightly modifies the data at random and sends.
+
+
+## Unit Tests
+Included are partial unit tests, using mocha and chai. From  the root dir:
 ```
 npm test
 ```
-Or, if already in the ``server`` directory, simply run ``make test``.

@@ -1,7 +1,7 @@
 /**
- * Author: Mark Sherman <msherman@cs.uml.edu>
+ * Author: Mark Sherman <shermanm@mit.edu>
  *
- * Copyright 2015 Mark Sherman
+ * Copyright 2015-2017 Mark Sherman
  *
  * The RPC module that takes file data from the client and files it.
  * The RPC client will call the "log" procedure with one argument-
@@ -12,11 +12,8 @@
  *  "saveProject" which commits, internally, to git.
  *  "consolelog" for debugging, dumping data to console
  *
- * Git commit process based on work of Derrell Lipman:
- *   https://github.com/derrell/LearnCS/blob/master/dbif/source/class/playground/dbif/MFiles.js
- *
  * License:
- *   Apache : http://www.apache.org/licenses/LICENSE-2.0.txt
+ *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 var defaults =
@@ -25,7 +22,6 @@ var defaults =
 };
 var userdb = require('../userdb.js')();
 var Log = require('../loglevel.js')(defaults);
-var git = require('../savegit.js')(defaults);
 
 var dumpToFile = false;  // consolelog can optionally dump the received JSON to file
 var fs = require("fs");
@@ -120,89 +116,6 @@ function saveProject (projectData){
   {
     Log.error("Error caught from get_code_name in saveProject: " + err);
     return Promise.reject(err);
-  });
-}
-
-/**
-* Save a program via git.
-* DO NOT CALL DIRECTLY - use saveProject
-*
-* Needs to return a promise that resolves.
-* The calling 'saveProject' function will then resolve for the RPC.
-*
-* Based on _saveProgram, part of LearnCS by Derrell Lipman
-* github.com/derrell/LearnCS
-*
-*
-* @param projectData {Map}
-*
-* @return promise {Number/Error}
-*   Zero upon success; Error object otherwise
-*/
-function saveProjectToGit (projectData)
-{
-  return new Promise(function(resolve, reject)
-  {
-    var date = Date();
-    Log.log("\nreceive started " + date);
-    // data that becomes a file or directory name must be sanitized
-    var userName        = sanitize(projectData.userName);
-    var projectName     = sanitize(projectData.projectName);
-    var projectId       = sanitize(projectData.projectId);
-    var screenName      = sanitize(projectData.screenName);
-    var sessionId       = projectData.sessionId;
-    var yaversion       = projectData.yaversion;
-    var languageVersion = projectData.languageVersion;
-    var eventType       = projectData.eventType;
-    var sendDate        = projectData.sendDate;
-
-    var detail          = "committed automatically by snapshot server";
-    var notes           = "sendDate: " + sendDate + "\n" +
-                          "eventType: " + eventType + "\n" +
-                          "sessionID: " + sessionId + "\n" +
-                          "yaversion: " + yaversion + "\n" +
-                          "languageVersion: " + languageVersion;
-
-    var blocks          = projectData.blocks;
-    var form            = projectData.form;
-
-    // Create the directory name
-    // Format: userFiles/userName/projectName#projectID.git/screen/{files}
-    var gitDir = dataDir + userName + "/" + projectName + "#" + projectId + ".git";
-    var screenDir = gitDir + "/" + screenName;
-
-    var blocksfile = "blocks.xml";
-    var formfile = "form.json";
-
-    Log.log("Files to commit will be: \n\t" +
-      screenDir + "/" + blocksfile + "\n\t" +
-      screenDir + "/" + formfile);
-
-    // 1. Be sure the file's directory has been created
-    Log.debug(date + " 0");
-    return git.mkScreenDir(screenDir)()
-      .then( git.writeFile(screenDir, blocksfile, blocks) )
-      .then( git.writeFile(screenDir, formfile, form) )
-      .then( git.createRepo(gitDir) )
-      .then( git.setUser(gitDir, userName) )
-      .then( git.setFakeEmail(gitDir) )
-      .then( git.addFiles(screenDir, blocksfile, formfile) )
-      .catch(
-        function(error){
-          Log.debug("Error in system calls in saveProjectToGit, prior to commit: " + error);
-          reject(error);
-        })
-      .then( git.commit(gitDir, detail) )
-      .then( git.afterCommitSucceed(gitDir, notes),
-             git.afterCommitFail(gitDir, screenDir, blocksfile, formfile, detail, notes) )
-      // TODO add post-commit options and features, @ MFiles.js:277
-      .then(resolve("0"))
-      .catch(
-        function(error){
-          Log.debug("Error in system calls in saveProjectToGit: " + error);
-          reject(error);
-        });
-
   });
 }
 

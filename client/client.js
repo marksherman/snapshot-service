@@ -1,3 +1,13 @@
+/*
+ * Author: Mark Sherman <shermanm@mit.edu>
+ *
+ * Copyright 2015-2017 Mark Sherman
+ *
+ * License:
+ *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 var count = 101;
 
 var testdata =
