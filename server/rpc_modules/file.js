@@ -96,6 +96,8 @@ function consolelog (projectData) {
 */
 function saveProject (projectData){
 
+  var receiveDate = new Date();
+
   var data = JSON.parse(projectData);
 
   var userRealName = data.userName;
@@ -104,7 +106,7 @@ function saveProject (projectData){
   .then(function(codename)
   {
     data.userName = codename;
-    return saveProjectTo(data)
+    return saveProjectTo(data, receiveDate)
     .then(function(){
       return Promise.resolve("0");
     })
@@ -131,9 +133,8 @@ function saveProject (projectData){
 * Based on _saveProgram, part of LearnCS by Derrell Lipman
 * github.com/derrell/LearnCS
 *
-* @param metadata {Map}
 *
-* @param projectContents {Map}
+* @param projectData {Map}
 *
 * @return promise {Number/Error}
 *   Zero upon success; Error object otherwise
@@ -143,7 +144,7 @@ function saveProjectToGit (projectData)
   return new Promise(function(resolve, reject)
   {
     var date = Date();
-    Log.log("\nRecieve started " + date);
+    Log.log("\nreceive started " + date);
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(projectData.userName);
     var projectName     = sanitize(projectData.projectName);
@@ -205,25 +206,34 @@ function saveProjectToGit (projectData)
   });
 }
 
-function saveProjectToFile (projectData)
+/**
+ * Save a snapshot to a flat file.
+ * DO NOT CALL DIRECTLY - use saveProject
+ *
+ * Needs to return a promise that resolves.
+ * The calling 'saveProject' function will then resolve for the RPC.
+ *
+ * @param projectData {Map}
+ *
+ * @param receiveDate {Date}
+ *
+ * @return promise {Number/Error}
+ *   Zero upon success; Error object otherwise
+ */
+function saveProjectToFile (projectData, receiveDate)
 {
   return new Promise(function(resolve, reject)
   {
-    var date = Date();
-    Log.log("\nRecieve started " + date);
+    Log.log("\nreceive started " + receiveDate);
+
+    projectData.receiveDate = receiveDate;
+
     // data that becomes a file or directory name must be sanitized
     var userName        = sanitize(projectData.userName);
     var projectName     = sanitize(projectData.projectName);
     var projectId       = sanitize(projectData.projectId);
-    var screenName      = sanitize(projectData.screenName);
-    // var sessionId       = projectData.sessionId;
-    // var yaversion       = projectData.yaversion;
-    // var languageVersion = projectData.languageVersion;
-    // var eventType       = projectData.eventType;
+    var screenName      = strip_screen_name(sanitize(projectData.screenName));
     var sendDate        = sanitize(projectData.sendDate);
-
-    // var blocks          = projectData.blocks;
-    // var form            = projectData.form;
 
     projectData.userName = userName;
     projectData.projectName = projectName;
@@ -256,6 +266,23 @@ function saveProjectToFile (projectData)
       });
     });
   });
+}
+
+/**
+ * Strips the project ID out of the Screen Name.
+ * Screen name comes in from App Inventor as "5629499534213120_Screen1" (project ID and screen name)
+ * It is more convenient for analysis to strip off the project ID to just "Screen1"
+ *
+ * If the name is already stripped, it will return it with no change. The key to knowing is the _ char.
+ *
+ * @param name {String}
+ *
+ * @return {String}
+ */
+function strip_screen_name (name)
+{
+  const index = name.indexOf('_') + 1;
+  return name.slice(index);
 }
 
 /**
