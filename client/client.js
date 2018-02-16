@@ -26,11 +26,6 @@ var testdata =
 
 goog.require('goog.dom');
 
-function sayHi() {
-  var newHeader = goog.dom.createDom('h1', {'style': 'background-color:#EEE'},
-    'Hello world!');
-  goog.dom.appendChild(document.body, newHeader);
-}
 
 /*************** from snapshot.js ************************/
 /**
@@ -132,4 +127,24 @@ var jiggle = function(){
 		});
 
 	blockly_send(jiggledData);
+};
+
+var hello = function(){
+
+    var content = goog.json.serialize(
+        {	"jsonrpc": "2.0",
+            "method": "sayHello",
+            "params": "{}",
+            "id": ++idno }    // dirty, i know -Mark
+    );
+
+    console.log("\n\n------ Saying Hello to server ------ " + new Date() + "\n");
+
+    goog.net.XhrIo.send(dataUrl, function(e) {
+        const obj = e.target.getResponseJson();
+        console.log('%%%% sayHello COMPLETE');
+        if (obj["result"] === "Hello!") {
+            console.log('%%%% sayHello Server said hello at ' + dataUrl);
+        }
+    }, "POST", content);
 };

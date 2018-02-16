@@ -34,9 +34,13 @@ The text client is extremely basic and not generally useful except for developme
 The test client requires google's closure library as a submodule. This will be automatically downloaded during npm's installation.
 
 Open ``client/client.html``, and view the javascript console. By default the client will connect to server running on localhost:8000.
-There are two buttons:
+There are three buttons, the first two work together:
 * **Send Test Data**: always sends the exact same data. Useful for detecting no-change commits.
 * **Jiggle and Send**: slightly modifies the data at random and sends.
+
+The third button is to check if the server is up:
+
+* **Say Hello to Server**: Send a hello to the server, and display if if the server says hello back.
 
 
 ## Unit Tests
