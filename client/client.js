@@ -38,7 +38,7 @@ goog.require('goog.dom');
 
 goog.require('goog.net.XhrIo');
 
-//var dataUrl = 'http://msp.cs.uml.edu/api';
+//var dataUrl = 'http://snapshot.appinventor.mit.edu/v1.0';
 var dataUrl = 'http://localhost:8000/v1.0';
 
 var idno = 0;
@@ -147,4 +147,10 @@ var hello = function(){
             console.log('%%%% sayHello Server said hello at ' + dataUrl);
         }
     }, "POST", content);
+};
+
+/*******************************/
+/* Display in the page which server we're hooked up to */
+window.onload = () => {
+  document.getElementById("serverUrl").innerText = dataUrl;
 };

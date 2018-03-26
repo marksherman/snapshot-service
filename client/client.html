@@ -1,17 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Test Client</title>
-    <script src="lib/closure-library/closure/goog/base.js"></script>
-    <script src="http://rawgit.com/lodash/lodash/3.10.1/lodash.min.js"></script>
-    <script src="client.js"></script>
-  </head>
-  <body>
-	<h1>Open the javascript console!</h1>
-  (option + command + j) <p/>
-  <button onclick="send()">Send Test Data</button>
-  <button onclick="jiggle()">Jiggle and Send</button>
-  <br><br><br>
-  <button onclick="hello()">Say Hello to Server</button>
-  </body>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Test Client</title>
+  <script src="https://www.screencastify.com/libs-api/castify-api.js"></script>
+  <script src="lib/closure-library/closure/goog/base.js"></script>
+  <script src="http://rawgit.com/lodash/lodash/3.10.1/lodash.min.js"></script>
+
+  <script src="lib/castify-api-docs/demos/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <link rel="import" href="lib/castify-api-docs/demos/bower_components/paper-styles/classes/global.html">
+  <link rel="import" href="lib/castify-api-docs/demos/bower_components/paper-toolbar/paper-toolbar.html">
+
+  <link rel="import" href="lib/castify-api-docs/demos/castify-recorder/castify-recorder.html">
+  <link rel="import" href="lib/castify-api-docs/demos/castify-share-player/castify-share-player.html">
+
+  <script src="client.js"></script>
+
+  <style is="custom-style">
+    castify-recorder {
+      --castify-recorder-start-color: var(--accent-color);
+    }
+    paper-toolbar .title {
+      margin-left: 0 !important;
+    }
+    castify-share-player {
+      @apply(--layout-flex);
+    }
+  </style>
+  <script>
+    screencastify.setAppId(5672450807824384);
+  </script>
+</head>
+<body class="fullbleed layout vertical">
+
+<paper-toolbar>
+  <span class="title">In-Site Recorder Demo</span>
+  <!-- Custom element with recorder control UI -->
+  <castify-recorder mic-audio="true" payload="some payload" capture-source="screen">
+  </castify-recorder>
+</paper-toolbar>
+<!-- Custom element that shows shared videos in a video tag-->
+<castify-share-player></castify-share-player>
+
+
+<h1>Open the javascript console!</h1>
+(option + command + j) <p/>
+<span id="serverUrl"></span><br/>
+<button onclick="send()">Send Test Data</button>
+<button onclick="jiggle()">Jiggle and Send</button>
+<br><br><br>
+<button onclick="hello()">Say Hello to Server</button>
+
+</body>
 </html>

@@ -16,6 +16,8 @@ var Log = require('./loglevel.js')();
 
 app.use(cors());
 
+app.get('/', (req, res) => res.send('Snapshot Receiver Server'));
+
 rpcServer.loadModules(__dirname + '/rpc_modules/', function () {
   app.post('/v1.0', rpc.middleware(rpcServer));
   app.listen(8000, function() {
