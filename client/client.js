@@ -76,7 +76,7 @@ var ss_xhrError = function() {
  * @param {string} snapshot data to send.
  */
 blockly_send = function(projectData) {
-	pd = _.assign({}, projectData,
+	var pd = _.assign({}, projectData,
 		{
 			"sendDate":new Date().toJSON()
 		}
@@ -112,7 +112,6 @@ var send = function(){
 };
 
 var jiggle = function(){
-	var jiggledData = {};
 	var jiggledBlocks =
 		"<xml xmlns=\"http://www.w3.org/1999/xhtml\">\n  <block type=\"text_join\" id=\"1\" inline=\"false\" x=\"" +
 		_.random(0,999).toString() +
@@ -120,7 +119,7 @@ var jiggle = function(){
 		_.random(0,999).toString() +
 		"\">\n    <mutation items=\"2\"></mutation>\n    <value name=\"ADD0\">\n      <block type=\"color_red\" id=\"21\">\n        <field name=\"COLOR\">#ff0000</field>\n      </block>\n    </value>\n  </block>\n  <yacodeblocks ya-version=\"140\" language-version=\"19\"></yacodeblocks>\n</xml>";
 
-	jiggledData = _.assign({}, testdata,
+	var jiggledData = _.assign({}, testdata,
 		{
 			"blocks":jiggledBlocks,
 			"eventType":"Test jiggle button click"
