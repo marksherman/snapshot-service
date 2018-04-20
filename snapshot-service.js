@@ -13,10 +13,13 @@ const cors = require('cors');
 const app = express();
 const rpcServer = new rpc.Server();
 const Log = require('./loglevel.js')();
+const screencast = require('./screencast');
 
 app.use(cors());
 
 app.get('/', (req, res) => res.send('Snapshot Receiver Server'));
+
+app.post('/v1.1/sc', screencast.post);
 
 rpcServer.loadModules(__dirname + '/rpc_modules/', function () {
   app.post('/v1.0', rpc.middleware(rpcServer));
