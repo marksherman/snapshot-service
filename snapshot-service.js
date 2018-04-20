@@ -1,18 +1,20 @@
 /**
  * Author: Mark Sherman <shermanm@mit.edu>
  *
- * Copyright 2015-2017 Mark Sherman
+ * Copyright 2015-2018 Mark Sherman
  *
  * License:
  *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-var rpc = require('jrpc2');
-var express = require('express');
-var cors = require('cors');
-var app = express();
-var rpcServer = new rpc.Server();
-var Log = require('./loglevel.js')();
+const rpc = require('jrpc2');
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const rpcServer = new rpc.Server();
+const Log = require('./loglevel.js')();
+const screencast = require('./screencast');
+const userdb = require('./userdb')();
 
 app.use(cors());
 
