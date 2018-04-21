@@ -1,3 +1,6 @@
 [submodule "lib/closure-library"]
 	path = client/lib/closure-library
 	url = https://github.com/google/closure-library
+[submodule "client/lib/castify-api-docs"]
+	path = client/lib/castify-api-docs
+	url = git@github.com:marksherman/castify-api-docs.git

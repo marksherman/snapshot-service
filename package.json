@@ -21,7 +21,7 @@
     "stop": "forever stopall",
     "restart": "forever restartall",
     "test": "mocha --reporter spec",
-    "postinstall": "git submodule init; git submodule update"
+    "postinstall": "postinstall.sh"
   },
   "homepage": "https://github.com/marksherman/snapshot-service#readme",
   "dependencies": {

@@ -29,15 +29,15 @@ var codename = require('codename')();
 * @return {Object}
 */
 module.exports = function (opts) {
-  var defaults = {
+  const defaults = {
     db_path: path.resolve(__dirname, 'usermap.sqlite3'),
     log_debug: false	// if log_debug is set to true, identity data may be printed to console log!
   };
 
-  var options = _.extend({}, defaults, opts);
-  var db = new sqlite3.Database(options.db_path);
-  var Log = require('./loglevel.js')(options);
-  var exports = {};
+  const options = _.extend({}, defaults, opts);
+  const db = new sqlite3.Database(options.db_path);
+  const Log = require('./loglevel.js')(options);
+  const exports = {};
 
   /* Some utility functions, not exposed in module */
 
@@ -76,14 +76,14 @@ module.exports = function (opts) {
 
   // returns a string, NOT a promise
   function generate_random_name(){
-    var tempname = codename.generate(['random'],['cities','animals']);
+    const tempname = codename.generate(['random'], ['cities', 'animals']);
     return tempname[0]+tempname[1];
   }
 
   // returns a promise
   function generate_unique_name(){
     // get a new name
-    var name = generate_random_name();
+    const name = generate_random_name();
     Log.debug("#UDB trying " + name);
     // check to make sure it is unique
     return codename_exists(name).then(function(value){
@@ -105,14 +105,16 @@ module.exports = function (opts) {
     });
   }
 
-  var dbinit = function () {
+  const dbinit = function() {
     db.serialize(function() {
-      db.run("CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)", [],
-      function(err){
-        if( err !== null ){
-          throw "Error initializing database in db.run: " + err ;
-        }
-      });
+      db.run(
+          'CREATE TABLE IF NOT EXISTS usermap (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, codename TEXT NOT NULL, date_added DATETIME)',
+          [],
+          function(err) {
+            if (err !== null) {
+              throw 'Error initializing database in db.run: ' + err;
+            }
+          });
     });
   };
 

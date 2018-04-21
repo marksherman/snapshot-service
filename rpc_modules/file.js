@@ -15,32 +15,29 @@
  * License:
  *   GPL-3.0 : https://www.gnu.org/licenses/gpl-3.0.en.html
  */
-
-var defaults =
-{
-  "log_debug": true
-};
+const defaults =
+    {
+      'log_debug': true,
+    };
 var userdb = require('../userdb.js')();
-var Log = require('../loglevel.js')(defaults);
+const Log = require('../loglevel.js')(defaults);
 
-var dumpToFile = false;  // consolelog can optionally dump the received JSON to file
-var fs = require("fs");
-var mkdirp = require("mkdirp");
+const dumpToFile = false;  // consolelog can optionally dump the received JSON to file
+const fs = require('fs');
+const mkdirp = require('mkdirp');
 
 /* Specifies which on-disk file saving routine to use.
  * Options currently are saveProjectToFile and saveProjectToGit */
-var saveProjectTo = saveProjectToFile;
+const saveProjectTo = saveProjectToFile;
 
 /* Directory root for collected data */
-var dataDir = __dirname + "/../userFiles/";
+const dataDir = __dirname + '/../userFiles/';
 
 /**
 * Logs a snapshot to console.
 * Can be used for debugging, but doesn't actually save anything!
 *
-* @param metadata {String}
-*
-* @param projectContents {String}
+* @param projectData {String}
 *
 * @return promise {Number/Error}
 *   Zero upon success; Error object otherwise
@@ -87,7 +84,7 @@ function consolelog (projectData) {
 *
 * @param projectContents {String}
 *
-* @return promise {Number/Error}
+* @return Promise {Number/Error}
 *   Zero upon success; Error object otherwise
 */
 function saveProject (projectData){
@@ -130,7 +127,7 @@ function saveProject (projectData){
  *
  * @param receiveDate {Date}
  *
- * @return promise {Number/Error}
+ * @return Promise {Number/Error}
  *   Zero upon success; Error object otherwise
  */
 function saveProjectToFile (projectData, receiveDate)
