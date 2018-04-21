@@ -20,8 +20,7 @@
     "start": "forever start -m 1 --minUptime 1000 --spinSleepTime 1000 snapshot-service.js",
     "stop": "forever stopall",
     "restart": "forever restartall",
-    "test": "mocha --reporter spec",
-    "postinstall": "postinstall.sh"
+    "test": "mocha --reporter spec"
   },
   "homepage": "https://github.com/marksherman/snapshot-service#readme",
   "dependencies": {
