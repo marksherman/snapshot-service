@@ -17,9 +17,7 @@
     "url": "https://github.com/marksherman/snapshot-service/issues"
   },
   "scripts": {
-    "start": "forever start -m 1 --minUptime 1000 --spinSleepTime 1000 snapshot-service.js",
-    "stop": "forever stopall",
-    "restart": "forever restartall",
+    "start": "node snapshot-service.js",
     "test": "mocha --reporter spec"
   },
   "homepage": "https://github.com/marksherman/snapshot-service#readme",
@@ -27,12 +25,11 @@
     "codename": "0.0.4",
     "cors": "^2.7.1",
     "express": "^4.16.2",
-    "forever": "^0.15.3",
     "jrpc2": "^1.0.5",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "path": "^0.12.7",
-    "sqlite3": "^3.1.13"
+    "sqlite3": "^4.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
