@@ -10,14 +10,13 @@ Requires:
 * In that directory, run ``npm install`` to download necessary extensions.
 
 ## Run Server
-From the root directory:
+For local testing, from the root directory:
 ```
 npm start
 ```
-Which will start a background process you can interrogate using ``forever list``. 
-(You will have to ``npm install forever -g`` to conveniently use forever without plunging into node_modules from the command line.)
+which is a convenience for running directly: ``node snapshot-service.js``.
 
-To run directly for testing, use ``node snapshot-service.js``.
+For deployment, I highly recommend using pm2. 
 
 ## MIT App Inventor
 This service is made to receive data from a snapshot-enabled branch of MIT App Inventor.
